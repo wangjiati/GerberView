@@ -1,0 +1,105 @@
+// 形状类型 — 对应 KiCad 的 GBR_BASIC_SHAPE_TYPE
+export enum ShapeType {
+  Segment = 'segment',       // 线段（圆头/方头笔）
+  Arc = 'arc',               // 圆弧
+  Circle = 'circle',         // 圆环
+  Polygon = 'polygon',       // 填充多边形（G36/G37 区域）
+  SpotCircle = 'spotCircle', // 闪光-圆形光圈
+  SpotRect = 'spotRect',     // 闪光-矩形光圈
+  SpotOval = 'spotOval',     // 闪光-椭圆光圈
+  SpotPoly = 'spotPoly',     // 闪光-正多边形光圈
+  SpotMacro = 'spotMacro',   // 闪光-光圈宏
+}
+
+// 光圈类型 — 对应 KiCad 的 APERTURE_T
+export enum ApertureType {
+  Circle = 'C',   // 圆形
+  Rect = 'R',     // 矩形
+  Oval = 'O',     // 椭圆
+  Polygon = 'P',  // 正多边形
+  Macro = 'M',    // 光圈宏
+}
+
+// 光圈钻孔类型
+export enum DrillShape {
+  NoHole = 'noHole',
+  RoundHole = 'roundHole',
+  RectHole = 'rectHole',
+}
+
+// 插补模式 — 对应 KiCad 的 gerb_interp
+export enum Interpolation {
+  Linear = 0,   // G01 线性
+  ArcCW = 1,    // G02 顺时针圆弧
+  ArcCCW = 2,   // G03 逆时针圆弧
+}
+
+// 曝光状态
+export enum Exposure {
+  Off = 0, // D02 移动
+  On = 1,  // D01 画线
+}
+
+// Gerber 单位
+export enum GerberUnit {
+  Inch = 'inch',
+  Metric = 'metric',
+}
+
+// 坐标格式零省略方式
+export enum ZeroOmission {
+  Leading = 'L',   // 省略前导零
+  Trailing = 'T',  // 省略后尾零
+}
+
+// 极性
+export enum Polarity {
+  Positive = 'POS',
+  Negative = 'NEG',
+}
+
+// 层极性（LP 命令）
+export enum LayerPolarity {
+  Dark = 'DARK',
+  Clear = 'CLEAR',
+}
+
+// 圆弧象限模式
+export enum ArcQuadrantMode {
+  Single = 'single',   // G74 单象限
+  Multi = 'multi',     // G75 多象限
+}
+
+// 光圈宏图元类型 — 对应 AM_PRIMITIVE_ID
+export enum MacroPrimitiveId {
+  Comment = 0,
+  Circle = 1,
+  Line2 = 2,
+  Line20 = 20,
+  LineCenter = 21,
+  LineLowerLeft = 22,
+  Outline = 4,
+  Polygon5 = 5,
+  Moire = 6,
+  Thermal = 7,
+}
+
+// AM_PARAM 操作符类型
+export enum ParamItemType {
+  NOP,
+  PushValue,
+  PushParam,
+  Add,
+  Sub,
+  Mul,
+  Div,
+  Negate,
+}
+
+// 最大图层数（与 KiCad 一致为 32 层）
+export const MAX_LAYERS = 32;
+
+// KiCad 内部单位：1nm = 0.000001mm，1IU = 10nm
+// Gerber 内部单位使用 nm（纳米）
+export const IU_PER_MM = 1e6;   // 1mm = 1,000,000 nm
+export const IU_PER_INCH = 2.54e7; // 1inch = 25,400,000 nm

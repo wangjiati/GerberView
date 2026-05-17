@@ -1,0 +1,1603 @@
+import { Viewport } from '../renderer/viewport';
+import { Renderer, DisplayOptions, DEFAULT_DISPLAY_OPTIONS } from '../renderer/renderer';
+import { LayerManager, GerberImage } from '../model/gerber-image';
+import { GerberParser, detectGerberFile, KICAD_LAYER_COLORS } from '../parser/gerber-parser';
+import { ExcellonParser, detectExcellonFile } from '../parser/excellon-parser';
+import { IU_PER_MM, ShapeType } from '../model/enums';
+import { Point, pt, GerberItem } from '../model/gerber-item';
+import { ThemeColors, PRESET_THEMES, loadTheme, saveTheme, applyThemeToGridConfig } from './theme';
+import { hitTest, HitResult } from '../tools/hit-test';
+import { createItemTooltip, createItemDetailDialog } from './item-info';
+import { transformPointWorld } from '../tools/transform';
+import { Interpolation } from '../model/enums';
+import { exportToSVG, downloadSVG } from '../tools/exporter-svg';
+import { exportToDXF, downloadDXF } from '../tools/exporter-dxf';
+import { MeasurementManager, MeasureMode, Measurement, computeDistance, computeAngleDeg, computePolygonArea, formatNm, renderMeasurements } from '../tools/measurement';
+import { runDfmAnalysis, formatDfmValue, DfmReport } from '../tools/dfm-analysis';
+
+export type UnitMode = 'mm' | 'inch' | 'mil';
+
+// ============ 捕捉点类型 ============
+
+enum SnapType {
+  Endpoint = 1,  // 端点（线段/弧的起终点、多边形顶点）
+  Midpoint = 2,  // 中点（线段中点、弧中点、多边形边中点）
+  Center = 3,    // 中心点（弧心、焊盘中心）
+}
+
+interface SnapResult {
+  world: Point;
+  type: SnapType;
+}
+
+// 屏幕空间捕捉阈值（像素）
+const SNAP_THRESHOLD_PX = 10;
+
+const svg = (paths: string, fill = false) =>
+  `<svg viewBox="0 0 20 20" ${fill ? 'class="filled"' : ''}>${paths}</svg>`;
+
+const ICONS = {
+  clearAll: svg('<path d="M4 4h12v12H4z M6 6l8 8M14 6l-8 8" stroke-width="1.5"/>'),
+  openFile: svg('<rect x="3" y="2" width="14" height="16" rx="1" fill="none" stroke-width="1.2"/><path d="M6 7h8M6 10h8M6 13h5" stroke-width="1"/>'),
+  openDrill: svg('<circle cx="7" cy="7" r="2.5" fill="none" stroke-width="1.2"/><circle cx="13" cy="7" r="2.5" fill="none" stroke-width="1.2"/><circle cx="7" cy="13" r="2.5" fill="none" stroke-width="1.2"/><circle cx="13" cy="13" r="2.5" fill="none" stroke-width="1.2"/>'),
+  print: svg('<path d="M5 8V3h10v5M4 8h12v6h-3v3H7v-3H4z" fill="none" stroke-width="1.2"/>'),
+  redraw: svg('<path d="M10 4a6 6 0 1 1-5.2 3" fill="none" stroke-width="1.5"/><path d="M10 1l0 5 4-3z" fill="currentColor" stroke="none"/>'),
+  zoomIn: svg('<circle cx="9" cy="9" r="5.5" fill="none" stroke-width="1.3"/><path d="M13 13l4 4" stroke-width="1.5"/><path d="M7 9h4M9 7v4" stroke-width="1.3"/>'),
+  zoomOut: svg('<circle cx="9" cy="9" r="5.5" fill="none" stroke-width="1.3"/><path d="M13 13l4 4" stroke-width="1.5"/><path d="M7 9h4" stroke-width="1.3"/>'),
+  zoomFit: svg('<rect x="3" y="3" width="14" height="14" rx="1" fill="none" stroke-width="1.2"/><path d="M6 6l3 3M6 6v3M6 6h3M14 14l-3-3M14 14v-3M14 14h-3" stroke-width="1"/>'),
+  zoomArea: svg('<rect x="2" y="2" width="16" height="16" rx="1" fill="none" stroke-width="1.2" stroke-dasharray="3,2"/>'),
+  layerInfo: svg('<circle cx="10" cy="10" r="7" fill="none" stroke-width="1.2"/><path d="M10 7v1M10 10v4" stroke-width="1.5"/>'),
+  select: svg('<path d="M5 2l10 8-5 1-2 5z" fill="currentColor" stroke="none"/>'),
+  measure: svg('<path d="M4 16L16 4" stroke-width="1.5"/><path d="M4 16l2-1M4 16l1-2M16 4l-2 1M16 4l-1 2" stroke-width="1.2"/>'),
+  grid: svg('<path d="M4 4h12v12H4z" fill="none" stroke-width="1"/><path d="M4 8h12M4 12h12M8 4v12M12 4v12" stroke-width="0.8"/>'),
+  polarCoord: svg('<circle cx="10" cy="10" r="6" fill="none" stroke-width="1"/><path d="M10 10l5-3M10 10l0-6" stroke-width="1.2"/>'),
+  fullCursor: svg('<path d="M10 2v16M2 10h16" stroke-width="1.2"/>'),
+  flashSketch: svg('<rect x="4" y="4" width="5" height="5" fill="none" stroke-width="1.2"/><circle cx="14" cy="7" r="3" fill="none" stroke-width="1.2"/>'),
+  lineSketch: svg('<path d="M4 16L16 4" fill="none" stroke-width="1.5"/>'),
+  polySketch: svg('<path d="M4 14l5-8 5 4 3-5" fill="none" stroke-width="1.2"/>'),
+  negativeObj: svg('<rect x="3" y="3" width="14" height="14" rx="2" fill="none" stroke-width="1.2"/><path d="M6 10h8" stroke-width="1.5"/>'),
+  dcode: svg('<text x="10" y="14" text-anchor="middle" font-size="10" font-weight="bold" fill="currentColor" stroke="none" font-family="monospace">D</text>'),
+  diffMode: svg('<rect x="3" y="4" width="6" height="12" rx="1" fill="none" stroke-width="1.2"/><rect x="11" y="4" width="6" height="12" rx="1" fill="none" stroke-width="1.2"/><path d="M9 7h2M9 10h2M9 13h2" stroke-width="1"/>'),
+  contrast: svg('<circle cx="10" cy="10" r="7" fill="none" stroke-width="1.2"/><path d="M10 3a7 7 0 0 1 0 14z" fill="currentColor" stroke="none" opacity="0.6"/>'),
+  showLayers: svg('<rect x="3" y="5" width="14" height="4" rx="1" fill="none" stroke-width="1.2"/><rect x="3" y="11" width="14" height="4" rx="1" fill="none" stroke-width="1.2"/>'),
+  mirror: svg('<path d="M4 10h12" stroke-width="1.2"/><path d="M14 7l3 3-3 3" fill="none" stroke-width="1.3"/><path d="M6 7l-3 3 3 3" fill="none" stroke-width="1.3"/>'),
+  highlightNet: svg('<path d="M4 10l4-6 4 4 4-4" fill="none" stroke-width="1.5"/><circle cx="4" cy="10" r="1" fill="currentColor" stroke="none"/>'),
+  highlightComp: svg('<rect x="5" y="5" width="10" height="10" rx="2" fill="none" stroke-width="1.2"/><path d="M8 3v4M12 3v4" stroke-width="1"/>'),
+  highlightAttr: svg('<path d="M4 4l6 12 6-12" fill="none" stroke-width="1.5"/>'),
+};
+
+export class App {
+  private canvas!: HTMLCanvasElement;
+  private ctx!: CanvasRenderingContext2D;
+  private viewport: Viewport = new Viewport();
+  private layerManager: LayerManager = new LayerManager();
+  private renderer!: Renderer;
+  private displayOptions: DisplayOptions = { ...DEFAULT_DISPLAY_OPTIONS };
+
+  private layerListEl!: HTMLElement;
+  private statusBarEl!: HTMLElement;
+  private zoomDisplayEl!: HTMLElement;
+  private coordDisplayEl!: HTMLElement;
+  private layerPanelEl!: HTMLElement;
+  private layerTabBtns: HTMLElement[] = [];
+  private layerTabContents: HTMLElement[] = [];
+  private activeLayerSelect!: HTMLSelectElement;
+  private leftToolbarBtns: Map<string, HTMLElement> = new Map();
+  private _netSel!: HTMLSelectElement;
+  private _compSel!: HTMLSelectElement;
+  private _attrSel!: HTMLSelectElement;
+  private fileInfoEl!: HTMLElement;
+
+  // 测量工具状态
+  private measureActive: boolean = false;
+  private measureStart: Point | null = null;
+  private measureEnd: Point | null = null;
+
+  // 捕捉状态
+  private currentSnap: SnapResult | null = null;
+
+  // 光标状态
+  private cursorScreenPos: Point = pt(0, 0);
+  private fullCursor: boolean = false;
+  private polarCoords: boolean = false;
+
+  private isPanning = false;
+  private lastMousePos = { x: 0, y: 0 };
+  private unitMode: UnitMode = 'mm';
+  private layerPanelVisible = true;
+  private theme: ThemeColors = loadTheme();
+  private selectedItem: HitResult | null = null;
+  private hoveredItem: HitResult | null = null;
+  private itemTooltip: HTMLDivElement | null = null;
+  private measureMgr = new MeasurementManager();
+  private measureMode: MeasureMode = MeasureMode.PointToPoint;
+  private measureInProgress: Point[] = [];
+
+  constructor(container: HTMLElement) {
+    this.buildUI(container);
+    this.initRenderer();
+    this.applyTheme();
+    this.bindEvents();
+    this.requestRender();
+  }
+
+  // ========== UI 构建 ==========
+
+  private buildUI(container: HTMLElement) {
+    container.innerHTML = '';
+    container.className = 'gerbview-app';
+    container.appendChild(this.createMenuBar());
+    container.appendChild(this.createTopToolbar());
+    const mainArea = document.createElement('div');
+    mainArea.className = 'main-area';
+    mainArea.appendChild(this.createLeftToolbar());
+    const canvasContainer = document.createElement('div');
+    canvasContainer.className = 'canvas-container';
+    this.canvas = document.createElement('canvas');
+    this.ctx = this.canvas.getContext('2d')!;
+    canvasContainer.appendChild(this.canvas);
+    mainArea.appendChild(canvasContainer);
+    this.layerPanelEl = this.createLayerPanel();
+    mainArea.appendChild(this.layerPanelEl);
+    container.appendChild(mainArea);
+    this.statusBarEl = this.createStatusBar();
+    container.appendChild(this.statusBarEl);
+  }
+
+  private createMenuBar(): HTMLElement {
+    const menu = document.createElement('div');
+    menu.className = 'menu-bar';
+    const menus = [
+      { label: '文件', items: [
+        { label: '自动检测并打开文件...', action: () => this.openFiles('all') },
+        { label: '打开 Gerber 文件...', action: () => this.openFiles('gerber') },
+        { label: '打开钻孔文件...', action: () => this.openFiles('excellon') },
+        { type: 'separator' as const },
+        { label: '清除所有图层', action: () => this.clearAll() },
+        { type: 'separator' as const },
+        { label: '导出为 PNG...', action: () => this.exportPNG() },
+        { label: '导出为 SVG...', action: () => this.exportSVG() },
+        { label: '导出为 DXF...', action: () => this.exportDXF() },
+      ]},
+      { label: '视图', items: [
+        { label: '适应窗口', action: () => this.zoomFit() },
+        { label: '放大', action: () => { this.viewport.zoom(1.5); this.requestRender(); } },
+        { label: '缩小', action: () => { this.viewport.zoom(1 / 1.5); this.requestRender(); } },
+        { type: 'separator' as const },
+        { label: '显示网格', action: () => { this.displayOptions.showGrid = !this.displayOptions.showGrid; this.syncLeftToolbar(); this.requestRender(); }, checked: () => this.displayOptions.showGrid },
+        { type: 'separator' as const },
+        { label: '高对比度模式', action: () => { this.displayOptions.highContrastMode = !this.displayOptions.highContrastMode; this.syncLeftToolbar(); this.requestRender(); }, checked: () => this.displayOptions.highContrastMode },
+      ]},
+      { label: '图层', items: [
+        { label: '按扩展名排序', action: () => this.sortLayers() },
+        { type: 'separator' as const },
+        { label: '显示全部', action: () => this.setAllLayersVisible(true) },
+        { label: '隐藏全部', action: () => this.setAllLayersVisible(false) },
+      ]},
+      { label: '工具', items: [
+        { label: 'DFM 分析...', action: () => this.showDfmReport() },
+        { label: '清除测量', action: () => { this.measureMgr.clearAll(); this.requestRender(); } },
+      ]},
+    ];
+
+    for (const m of menus) {
+      const btn = document.createElement('div');
+      btn.className = 'menu-item';
+      btn.textContent = m.label;
+      const dropdown = document.createElement('div');
+      dropdown.className = 'menu-dropdown';
+      for (const item of m.items) {
+        if (item.type === 'separator') {
+          const sep = document.createElement('div'); sep.className = 'menu-separator';
+          dropdown.appendChild(sep);
+        } else {
+          const el = document.createElement('div');
+          el.className = 'menu-dropdown-item';
+          el.textContent = item.label!;
+          if (item.checked?.()) el.classList.add('checked');
+          el.addEventListener('click', (e) => { e.stopPropagation(); dropdown.style.display = 'none'; item.action?.(); });
+          dropdown.appendChild(el);
+        }
+      }
+      btn.appendChild(dropdown);
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const vis = dropdown.style.display === 'block';
+        document.querySelectorAll('.menu-dropdown').forEach(d => (d as HTMLElement).style.display = 'none');
+        dropdown.style.display = vis ? 'none' : 'block';
+      });
+      menu.appendChild(btn);
+    }
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.menu-dropdown').forEach(d => (d as HTMLElement).style.display = 'none');
+    });
+    return menu;
+  }
+
+  private createTopToolbar(): HTMLElement {
+    const tb = document.createElement('div');
+    tb.className = 'top-toolbar';
+    tb.appendChild(this.tbBtn(ICONS.clearAll, '清除所有图层', () => this.clearAll()));
+    tb.appendChild(sep());
+    tb.appendChild(this.tbBtn(ICONS.openFile, '打开 Gerber 文件', () => this.openFiles('gerber')));
+    tb.appendChild(this.tbBtn(ICONS.openDrill, '打开钻孔文件', () => this.openFiles('excellon')));
+    tb.appendChild(sep());
+    tb.appendChild(this.tbBtn(ICONS.print, '导出 PNG', () => this.exportPNG()));
+    tb.appendChild(this.tbBtn(ICONS.redraw, '重绘', () => this.requestRender()));
+    tb.appendChild(sep());
+    tb.appendChild(this.tbBtn(ICONS.zoomIn, '放大 (+)', () => { this.viewport.zoom(1.5); this.requestRender(); }));
+    tb.appendChild(this.tbBtn(ICONS.zoomOut, '缩小 (-)', () => { this.viewport.zoom(1 / 1.5); this.requestRender(); }));
+    tb.appendChild(this.tbBtn(ICONS.zoomFit, '适应窗口 (Home)', () => this.zoomFit()));
+    tb.appendChild(this.tbBtn(ICONS.zoomArea, '缩放到选区', () => {}));
+    tb.appendChild(sep());
+
+    const lbl = document.createElement('span'); lbl.className = 'tb-label'; lbl.textContent = '活动图层:';
+    tb.appendChild(lbl);
+    this.activeLayerSelect = document.createElement('select');
+    this.activeLayerSelect.className = 'tb-select';
+    this.activeLayerSelect.innerHTML = '<option value="-1">无</option>';
+    this.activeLayerSelect.addEventListener('change', () => {
+      this.displayOptions.activeLayer = parseInt(this.activeLayerSelect.value);
+      this.updateLayerPanel(); this.updateFileInfo(); this.requestRender();
+    });
+    tb.appendChild(this.activeLayerSelect);
+    tb.appendChild(this.tbBtn(ICONS.layerInfo, '图层信息', () => {}));
+    tb.appendChild(sep());
+
+    // X2 高亮选择器
+    const netLbl = document.createElement('span'); netLbl.className = 'tb-label'; netLbl.textContent = 'Net:';
+    tb.appendChild(netLbl);
+    const netSel = document.createElement('select'); netSel.className = 'tb-select';
+    netSel.innerHTML = '<option value="">-</option>';
+    netSel.addEventListener('change', () => { this.displayOptions.highlightNet = netSel.value; this.requestRender(); });
+    tb.appendChild(netSel);
+    this._netSel = netSel;
+
+    const compLbl = document.createElement('span'); compLbl.className = 'tb-label'; compLbl.textContent = 'Cmp:';
+    tb.appendChild(compLbl);
+    const compSel = document.createElement('select'); compSel.className = 'tb-select';
+    compSel.innerHTML = '<option value="">-</option>';
+    compSel.addEventListener('change', () => { this.displayOptions.highlightComp = compSel.value; this.requestRender(); });
+    tb.appendChild(compSel);
+    this._compSel = compSel;
+
+    const attrLbl = document.createElement('span'); attrLbl.className = 'tb-label'; attrLbl.textContent = 'Attr:';
+    tb.appendChild(attrLbl);
+    const attrSel = document.createElement('select'); attrSel.className = 'tb-select';
+    attrSel.innerHTML = '<option value="">-</option>';
+    attrSel.addEventListener('change', () => { this.displayOptions.highlightAttr = attrSel.value; this.requestRender(); });
+    tb.appendChild(attrSel);
+    this._attrSel = attrSel;
+
+    return tb;
+  }
+
+  private tbBtn(iconHtml: string, title: string, onClick: () => void): HTMLElement {
+    const btn = document.createElement('button');
+    btn.className = 'tb-btn'; btn.title = title; btn.innerHTML = iconHtml;
+    btn.addEventListener('click', onClick);
+    return btn;
+  }
+
+  private leftPanelEl: HTMLElement | null = null;
+  private activePanelKey: string = '';
+
+  private createLeftToolbar(): HTMLElement {
+    const wrap = document.createElement('div');
+    wrap.className = 'left-toolbar-wrap';
+
+    const tb = document.createElement('div');
+    tb.className = 'left-toolbar';
+
+    // 工具按钮（点击可在右侧展开面板）
+    tb.appendChild(this.ltPanelBtn('select', ICONS.select, '选择', true));
+    tb.appendChild(this.ltPanelBtn('measure', ICONS.measure, '测量', false));
+    tb.appendChild(sep(true));
+    tb.appendChild(this.ltPanelBtn('grid', ICONS.grid, '网格 (G)', true));
+    tb.appendChild(this.ltBtn('polar', ICONS.polarCoord, '极坐标', false));
+    tb.appendChild(sep(true));
+
+    // 单位选择
+    const unitGroup = document.createElement('div'); unitGroup.className = 'lt-unit-group';
+    for (const u of [{ key: 'inch' as UnitMode, label: 'in' }, { key: 'mil' as UnitMode, label: 'mil' }, { key: 'mm' as UnitMode, label: 'mm' }]) {
+      const btn = document.createElement('button');
+      btn.className = 'lt-unit-btn' + (u.key === this.unitMode ? ' active' : '');
+      btn.textContent = u.label;
+      btn.addEventListener('click', () => {
+        this.unitMode = u.key;
+        unitGroup.querySelectorAll('.lt-unit-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+      unitGroup.appendChild(btn);
+    }
+    tb.appendChild(unitGroup);
+    tb.appendChild(sep(true));
+    tb.appendChild(this.ltBtn('fullcursor', ICONS.fullCursor, '全屏十字光标', false));
+    tb.appendChild(sep(true));
+    tb.appendChild(this.ltBtn('flashSketch', ICONS.flashSketch, '焊盘轮廓模式', true));
+    tb.appendChild(this.ltBtn('lineSketch', ICONS.lineSketch, '线条轮廓模式', true));
+    tb.appendChild(this.ltBtn('polySketch', ICONS.polySketch, '多边形轮廓模式', true));
+    tb.appendChild(sep(true));
+    tb.appendChild(this.ltBtn('negative', ICONS.negativeObj, '显示负极性对象', true));
+    tb.appendChild(this.ltBtn('dcodes', ICONS.dcode, '显示 D 代码', false));
+    tb.appendChild(this.ltBtn('diff', ICONS.diffMode, '差异模式', false));
+    tb.appendChild(this.ltBtn('contrast', ICONS.contrast, '高对比度模式', false));
+    tb.appendChild(sep(true));
+    tb.appendChild(this.ltBtn('layerMgr', ICONS.showLayers, '显示图层面板', true));
+    tb.appendChild(this.ltBtn('mirror', ICONS.mirror, '镜像视图', false));
+
+    // 可展开面板
+    const panel = document.createElement('div');
+    panel.className = 'left-panel hidden';
+    this.leftPanelEl = panel;
+
+    wrap.appendChild(tb);
+    wrap.appendChild(panel);
+    return wrap;
+  }
+
+  private ltPanelBtn(key: string, iconHtml: string, title: string, initialActive: boolean): HTMLElement {
+    const btn = document.createElement('button');
+    btn.className = 'lt-btn' + (initialActive ? ' active' : '');
+    btn.title = title; btn.innerHTML = iconHtml; btn.dataset.key = key;
+    btn.addEventListener('click', () => {
+      const wasActive = btn.classList.contains('active');
+      // 切换面板：点击已展开的按钮则关闭，否则展开
+      if (this.activePanelKey === key) {
+        this.activePanelKey = '';
+        this.leftPanelEl!.classList.add('hidden');
+        this.leftPanelEl!.innerHTML = '';
+        return;
+      }
+      this.activePanelKey = key;
+      this.leftPanelEl!.classList.remove('hidden');
+      this.leftPanelEl!.innerHTML = '';
+      this.buildPanelContent(key);
+      this.onLeftToolbarClick(key, true);
+    });
+    this.leftToolbarBtns.set(key, btn);
+    return btn;
+  }
+
+  private buildPanelContent(key: string) {
+    const panel = this.leftPanelEl!;
+    if (key === 'select') {
+      panel.innerHTML = `<div class="lp-title">选择工具</div>
+        <div class="lp-row"><label>选中高亮</label></div>
+        <div class="lp-hint">点击元素查看属性<br>双击查看详细信息</div>`;
+    } else if (key === 'measure') {
+      this.buildMeasurePanel(panel);
+    } else if (key === 'grid') {
+      this.buildGridPanel(panel);
+    }
+  }
+
+  private buildMeasurePanel(panel: HTMLElement) {
+    panel.innerHTML = `<div class="lp-title">测量工具</div>
+      <div class="lp-row"><label>类型</label>
+        <select class="lp-select" id="lp-measure-mode">
+          <option value="p2p">距离</option>
+          <option value="angle">角度</option>
+          <option value="radius">半径</option>
+          <option value="area">面积</option>
+        </select>
+      </div>
+      <div class="lp-hint" id="lp-measure-hint">点击两点测量距离</div>
+      <div class="lp-row" style="margin-top:auto">
+        <button class="lp-btn" id="lp-measure-clear">清除所有测量</button>
+      </div>`;
+
+    const sel = panel.querySelector('#lp-measure-mode') as HTMLSelectElement;
+    sel.value = this.measureMode;
+    sel.addEventListener('change', () => {
+      this.measureMode = sel.value as MeasureMode;
+      this.measureInProgress = [];
+      this.measureStart = null;
+      this.updateMeasureHint();
+      this.requestRender();
+    });
+
+    panel.querySelector('#lp-measure-clear')!.addEventListener('click', () => {
+      this.measureMgr.clearAll();
+      this.measureInProgress = [];
+      this.measureStart = null;
+      this.requestRender();
+    });
+
+    this.updateMeasureHint();
+  }
+
+  private updateMeasureHint() {
+    const el = this.leftPanelEl?.querySelector('#lp-measure-hint');
+    if (!el) return;
+    const hints: Record<string, string> = {
+      p2p: '点击两点测量距离',
+      angle: '依次点击三个点测量夹角',
+      radius: '点击圆弧/圆测量半径',
+      area: '依次点击多边形顶点\n双击结束并计算面积',
+    };
+    el.textContent = hints[this.measureMode] || '';
+  }
+
+  private buildGridPanel(panel: HTMLElement) {
+    const gc = this.displayOptions.gridConfig;
+    const fineS = gc?.fineStyle || gc?.style || 'dots';
+    const coarseS = gc?.coarseStyle || 'lines';
+
+    panel.innerHTML = `<div class="lp-title">网格设置</div>
+      <div class="lp-section">细网格</div>
+      <div class="lp-row"><label>样式</label>
+        <select class="lp-select" id="lp-fine-style">
+          <option value="dots" ${fineS === 'dots' ? 'selected' : ''}>点</option>
+          <option value="lines" ${fineS === 'lines' ? 'selected' : ''}>线</option>
+          <option value="crosshairs" ${fineS === 'crosshairs' ? 'selected' : ''}>十字</option>
+        </select>
+      </div>
+      <div class="lp-row"><label>间距(mm)</label>
+        <input type="number" class="lp-input" id="lp-fine-spacing" min="0" step="any" placeholder="自动" value="${gc?.fineSpacing ? (gc.fineSpacing / IU_PER_MM).toFixed(4) : ''}">
+      </div>
+      <div class="lp-section">粗网格</div>
+      <div class="lp-row"><label>启用</label>
+        <input type="checkbox" id="lp-grid-coarse" ${gc?.showCoarse ? 'checked' : ''}>
+      </div>
+      <div class="lp-row"><label>样式</label>
+        <select class="lp-select" id="lp-coarse-style">
+          <option value="dots" ${coarseS === 'dots' ? 'selected' : ''}>点</option>
+          <option value="lines" ${coarseS === 'lines' ? 'selected' : ''}>线</option>
+          <option value="crosshairs" ${coarseS === 'crosshairs' ? 'selected' : ''}>十字</option>
+        </select>
+      </div>
+      <div class="lp-row"><label>间距(mm)</label>
+        <input type="number" class="lp-input" id="lp-coarse-spacing" min="0" step="any" placeholder="自动" value="${gc?.coarseSpacing ? (gc.coarseSpacing / IU_PER_MM).toFixed(4) : ''}">
+      </div>
+      <div class="lp-section">原点</div>
+      <div class="lp-row"><label>显示十字线</label>
+        <input type="checkbox" id="lp-grid-origin" ${gc?.showOriginCrosshair !== false ? 'checked' : ''}>
+      </div>`;
+
+    const update = (patch: Record<string, any>) => {
+      this.displayOptions.gridConfig = { ...this.displayOptions.gridConfig, ...patch };
+      this.requestRender();
+    };
+
+    panel.querySelector('#lp-fine-style')!.addEventListener('change', (e) => {
+      update({ fineStyle: (e.target as HTMLSelectElement).value });
+    });
+    panel.querySelector('#lp-coarse-style')!.addEventListener('change', (e) => {
+      update({ coarseStyle: (e.target as HTMLSelectElement).value });
+    });
+    panel.querySelector('#lp-grid-origin')!.addEventListener('change', (e) => {
+      update({ showOriginCrosshair: (e.target as HTMLInputElement).checked });
+    });
+    panel.querySelector('#lp-grid-coarse')!.addEventListener('change', (e) => {
+      update({ showCoarse: (e.target as HTMLInputElement).checked });
+    });
+    panel.querySelector('#lp-fine-spacing')!.addEventListener('change', (e) => {
+      const v = parseFloat((e.target as HTMLInputElement).value);
+      update({ fineSpacing: isNaN(v) || v <= 0 ? null : v * IU_PER_MM });
+    });
+    panel.querySelector('#lp-coarse-spacing')!.addEventListener('change', (e) => {
+      const v = parseFloat((e.target as HTMLInputElement).value);
+      update({ coarseSpacing: isNaN(v) || v <= 0 ? null : v * IU_PER_MM });
+    });
+  }
+
+  private ltBtn(key: string, iconHtml: string, title: string, initialActive: boolean): HTMLElement {
+    const btn = document.createElement('button');
+    btn.className = 'lt-btn' + (initialActive ? ' active' : '');
+    btn.title = title; btn.innerHTML = iconHtml; btn.dataset.key = key;
+    btn.addEventListener('click', () => { btn.classList.toggle('active'); this.onLeftToolbarClick(key, btn.classList.contains('active')); });
+    this.leftToolbarBtns.set(key, btn);
+    return btn;
+  }
+
+  private onLeftToolbarClick(key: string, active: boolean) {
+    switch (key) {
+      case 'select': if (active) { this.measureActive = false; this.measureStart = null; this.measureEnd = null; this.measureInProgress = []; } break;
+      case 'measure': this.measureActive = active; if (active) { this.measureStart = null; this.measureEnd = null; this.measureInProgress = []; } break;
+      case 'grid': this.displayOptions.showGrid = active; break;
+      case 'polar': this.polarCoords = active; break;
+      case 'fullcursor': this.fullCursor = active; break;
+      case 'origin': this.displayOptions.gridConfig = { ...this.displayOptions.gridConfig, showOriginCrosshair: active }; break;
+      case 'flashSketch': this.displayOptions.flashesFill = active; break;
+      case 'lineSketch': this.displayOptions.linesFill = active; break;
+      case 'polySketch': this.displayOptions.polygonsFill = active; break;
+      case 'negative': this.displayOptions.showNegativeObjects = active; break;
+      case 'dcodes': this.displayOptions.showDcodes = active; break;
+      case 'contrast': this.displayOptions.highContrastMode = active; break;
+      case 'diff': this.displayOptions.xorMode = active; break;
+      case 'layerMgr': this.layerPanelVisible = active; this.layerPanelEl.classList.toggle('hidden', !active); break;
+      case 'mirror': this.displayOptions.mirror = active; break;
+    }
+    this.requestRender();
+  }
+
+  private syncLeftToolbar() {
+    const set = (key: string, active: boolean) => { const b = this.leftToolbarBtns.get(key); if (b) b.classList.toggle('active', active); };
+    set('grid', this.displayOptions.showGrid);
+    set('flashSketch', this.displayOptions.flashesFill);
+    set('lineSketch', this.displayOptions.linesFill);
+    set('polySketch', this.displayOptions.polygonsFill);
+    set('negative', this.displayOptions.showNegativeObjects);
+    set('dcodes', this.displayOptions.showDcodes);
+    set('contrast', this.displayOptions.highContrastMode);
+    set('diff', this.displayOptions.xorMode);
+    set('layerMgr', this.layerPanelVisible);
+    set('mirror', this.displayOptions.mirror);
+  }
+
+  private createLayerPanel(): HTMLElement {
+    const panel = document.createElement('div'); panel.className = 'layer-panel';
+    const tabsEl = document.createElement('div'); tabsEl.className = 'layer-panel-tabs';
+    const layersTab = document.createElement('div'); layersTab.className = 'layer-tab active'; layersTab.textContent = '图层';
+    const itemsTab = document.createElement('div'); itemsTab.className = 'layer-tab'; itemsTab.textContent = '项目';
+    tabsEl.appendChild(layersTab); tabsEl.appendChild(itemsTab);
+    panel.appendChild(tabsEl);
+
+    const layersContent = document.createElement('div'); layersContent.className = 'layer-tab-content active';
+    this.layerListEl = document.createElement('div'); this.layerListEl.className = 'layer-list';
+    layersContent.appendChild(this.layerListEl); panel.appendChild(layersContent);
+
+    const itemsContent = document.createElement('div'); itemsContent.className = 'layer-tab-content';
+    itemsContent.innerHTML = `<div class="items-tab-content">
+      <div class="items-section"><div class="items-section-title">主题预设</div>
+        <div class="items-row"><select class="theme-select">
+          ${PRESET_THEMES.map(t => `<option value="${t.name}">${t.name}</option>`).join('')}
+        </select></div>
+      </div>
+      <div class="items-section"><div class="items-section-title">显示颜色</div>
+        <div class="items-row"><label>背景</label><input type="color" data-theme="canvasBackground" class="items-color-pick" value="${this.theme.canvasBackground}"></div>
+        <div class="items-row"><label>网格</label><input type="color" data-theme="gridDot" class="items-color-pick" value="${this.theme.gridDot}"></div>
+        <div class="items-row"><label>原点</label><input type="color" data-theme="gridOrigin" class="items-color-pick" value="${this.theme.gridOrigin}"></div>
+        <div class="items-row"><label>D 代码</label><input type="color" data-theme="dcodeLabel" class="items-color-pick" value="${this.theme.dcodeLabel}"></div>
+        <div class="items-row"><label>选中高亮</label><input type="color" data-theme="selectionHighlight" class="items-color-pick" value="${this.theme.selectionHighlight}"></div>
+      </div></div>`;
+    panel.appendChild(itemsContent);
+
+    // 主题预设选择
+    const themeSelect = itemsContent.querySelector('.theme-select') as HTMLSelectElement;
+    themeSelect.value = this.theme.name;
+    themeSelect.addEventListener('change', () => {
+      const preset = PRESET_THEMES.find(t => t.name === themeSelect.value);
+      if (preset) this.setTheme(preset);
+    });
+
+    // 颜色选择器
+    itemsContent.querySelectorAll<HTMLInputElement>('input[data-theme]').forEach(input => {
+      input.addEventListener('input', () => {
+        const key = input.dataset.theme as keyof ThemeColors;
+        (this.theme as any)[key] = input.value;
+        this.theme.name = 'Custom';
+        saveTheme(this.theme);
+        this.applyTheme();
+      });
+    });
+
+    this.layerTabBtns = [layersTab, itemsTab];
+    this.layerTabContents = [layersContent, itemsContent];
+    layersTab.addEventListener('click', () => this.switchTab(0));
+    itemsTab.addEventListener('click', () => this.switchTab(1));
+    return panel;
+  }
+
+  private switchTab(index: number) {
+    this.layerTabBtns.forEach((b, i) => b.classList.toggle('active', i === index));
+    this.layerTabContents.forEach((c, i) => c.classList.toggle('active', i === index));
+  }
+
+  private createStatusBar(): HTMLElement {
+    const bar = document.createElement('div'); bar.className = 'status-bar';
+    this.coordDisplayEl = document.createElement('span'); this.coordDisplayEl.className = 'status-item';
+    this.zoomDisplayEl = document.createElement('span'); this.zoomDisplayEl.className = 'status-item';
+    this.fileInfoEl = document.createElement('span'); this.fileInfoEl.className = 'status-item status-info';
+    bar.appendChild(this.coordDisplayEl); bar.appendChild(this.zoomDisplayEl); bar.appendChild(this.fileInfoEl);
+    return bar;
+  }
+
+  // ========== 渲染器初始化 ==========
+
+  private initRenderer() {
+    this.renderer = new Renderer(this.ctx, this.viewport, this.layerManager);
+    this.renderer.displayOptions = this.displayOptions;
+    this.resizeCanvas();
+  }
+
+  private applyTheme() {
+    const gridColors = applyThemeToGridConfig(this.theme);
+    this.displayOptions.gridConfig = { ...this.displayOptions.gridConfig, ...gridColors };
+    this.displayOptions.backgroundColor = this.theme.canvasBackground;
+    this.displayOptions.dcodeLabelColor = this.theme.dcodeLabel;
+    this.requestRender();
+  }
+
+  private setTheme(theme: ThemeColors) {
+    this.theme = { ...theme };
+    saveTheme(this.theme);
+    this.applyTheme();
+    this.updateThemeColorPickers();
+  }
+
+  private updateThemeColorPickers() {
+    const panel = this.layerPanelEl;
+    if (!panel) return;
+    panel.querySelectorAll<HTMLInputElement>('input[data-theme]').forEach(input => {
+      const key = input.dataset.theme as keyof ThemeColors;
+      if (key in this.theme) input.value = (this.theme as any)[key];
+    });
+    const sel = panel.querySelector('.theme-select') as HTMLSelectElement;
+    if (sel) sel.value = PRESET_THEMES.find(t => t.name === this.theme.name) ? this.theme.name : 'Custom';
+  }
+
+  private updateItemTooltip(mx: number, my: number) {
+    if (this.itemTooltip) { this.itemTooltip.remove(); this.itemTooltip = null; }
+    if (!this.hoveredItem) return;
+    this.itemTooltip = createItemTooltip(this.hoveredItem, this.unitMode);
+    this.itemTooltip.style.position = 'fixed';
+    this.itemTooltip.style.left = (mx + 16) + 'px';
+    this.itemTooltip.style.top = (my + 16) + 'px';
+    this.itemTooltip.style.zIndex = '1000';
+    document.body.appendChild(this.itemTooltip);
+  }
+
+  // ========== 事件 ==========
+
+  private bindEvents() {
+    window.addEventListener('resize', () => { this.resizeCanvas(); this.requestRender(); });
+
+    this.canvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const rect = this.canvas.getBoundingClientRect();
+      this.viewport.zoom(e.deltaY > 0 ? 1 / 1.2 : 1.2, { x: e.clientX - rect.left, y: e.clientY - rect.top });
+      this.requestRender();
+    }, { passive: false });
+
+    this.canvas.addEventListener('mousedown', (e) => {
+      if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
+        this.isPanning = true;
+        this.lastMousePos = { x: e.clientX, y: e.clientY };
+        this.canvas.style.cursor = 'grabbing';
+        e.preventDefault();
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const sp = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      this.cursorScreenPos = sp;
+
+      // 测量模式下更新捕捉
+      if (this.measureActive) {
+        this.currentSnap = this.findSnapPoint(sp);
+      }
+
+      // 悬停 tooltip（非测量模式）
+      if (!this.measureActive && !this.isPanning) {
+        const hit = hitTest(sp, this.layerManager, this.viewport);
+        if (hit !== this.hoveredItem) {
+          this.hoveredItem = hit;
+          this.updateItemTooltip(e.clientX, e.clientY);
+          this.requestRender();
+        } else if (hit) {
+          this.updateItemTooltip(e.clientX, e.clientY);
+        }
+      }
+
+      this.updateCoordDisplay(sp);
+
+      if (this.isPanning) {
+        this.viewport.pan(e.clientX - this.lastMousePos.x, e.clientY - this.lastMousePos.y);
+        this.lastMousePos = { x: e.clientX, y: e.clientY };
+        this.requestRender();
+      } else if (this.fullCursor || this.measureActive) {
+        this.requestRender();
+      }
+    });
+
+    // 左键点击
+    this.canvas.addEventListener('click', (e) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const sp = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+      if (this.measureActive) {
+        const wp = this.currentSnap?.world ?? this.viewport.screenToWorld(sp);
+        this.measureInProgress.push(wp);
+        this.measureStart = wp;
+
+        const mode = this.measureMode;
+        const pts = this.measureInProgress;
+
+        if (mode === MeasureMode.PointToPoint) {
+          if (pts.length === 2) {
+            const dist = computeDistance(pts[0], pts[1]);
+            this.measureMgr.add({ mode, points: [...pts], result: `距离: ${formatNm(dist, this.unitMode)}`, resultValue: dist });
+            this.measureInProgress = [];
+            this.measureStart = null;
+          }
+        } else if (mode === MeasureMode.Angle) {
+          if (pts.length === 3) {
+            const angle = computeAngleDeg(pts[0], pts[1], pts[2]);
+            this.measureMgr.add({ mode, points: [...pts], result: `角度: ${angle.toFixed(1)}°`, resultValue: angle });
+            this.measureInProgress = [];
+            this.measureStart = null;
+          }
+        } else if (mode === MeasureMode.Radius) {
+          if (pts.length === 1) {
+            const hit = hitTest(sp, this.layerManager, this.viewport);
+            let radius = 0;
+            if (hit && (hit.item.shapeType === ShapeType.Arc || hit.item.shapeType === ShapeType.Circle || hit.item.shapeType === ShapeType.SpotCircle)) {
+              const dx = hit.item.start.x - hit.item.arcCenter.x;
+              const dy = hit.item.start.y - hit.item.arcCenter.y;
+              radius = Math.sqrt(dx * dx + dy * dy) || hit.item.size.x / 2;
+            }
+            this.measureMgr.add({ mode, points: [...pts], result: `半径: ${formatNm(radius, this.unitMode)}`, resultValue: radius });
+            this.measureInProgress = [];
+            this.measureStart = null;
+          }
+        } else if (mode === MeasureMode.Area) {
+          // 面积模式：在 renderInProgress 中实时显示，双击结束
+          // （双击处理在 dblclick 事件中）
+        }
+
+        this.measureEnd = null;
+        this.requestRender();
+        return;
+      }
+
+      // 选择工具：命中测试
+      const hit = hitTest(sp, this.layerManager, this.viewport);
+      this.selectedItem = hit;
+      this.requestRender();
+    });
+
+    // 双击：面积模式完成测量，或显示元素详情
+    this.canvas.addEventListener('dblclick', (e) => {
+      const rect = this.canvas.getBoundingClientRect();
+      const sp = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+      if (this.measureActive && this.measureMode === MeasureMode.Area && this.measureInProgress.length >= 3) {
+        const area = computePolygonArea(this.measureInProgress);
+        const areaMm2 = area / (IU_PER_MM * IU_PER_MM);
+        this.measureMgr.add({
+          mode: MeasureMode.Area,
+          points: [...this.measureInProgress],
+          result: `面积: ${areaMm2.toFixed(4)} mm²`,
+          resultValue: area,
+        });
+        this.measureInProgress = [];
+        this.measureStart = null;
+        this.requestRender();
+        return;
+      }
+
+      if (this.measureActive) return;
+      const hit = hitTest(sp, this.layerManager, this.viewport);
+      if (hit) {
+        const dialog = createItemDetailDialog(hit, this.unitMode);
+        document.body.appendChild(dialog);
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (this.isPanning) { this.isPanning = false; this.canvas.style.cursor = 'default'; }
+    });
+
+    // 右键上下文菜单
+    this.canvas.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      this.showContextMenu(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('keydown', (e) => {
+      const key = e.key;
+      if (key === 'Escape') {
+        if (this.measureActive) {
+          if (this.measureInProgress.length > 0) {
+            this.measureInProgress = [];
+          } else {
+            this.measureActive = false;
+            this.measureStart = null;
+            this.measureEnd = null;
+            this.currentSnap = null;
+            const btn = this.leftToolbarBtns.get('measure');
+            if (btn) btn.classList.remove('active');
+            const selBtn = this.leftToolbarBtns.get('select');
+            if (selBtn) selBtn.classList.add('active');
+          }
+          this.requestRender();
+        }
+        return;
+      }
+      if (key === 'Home' || key === 'f') this.zoomFit();
+      else if (key === '+' || key === '=') { this.viewport.zoom(1.5); this.requestRender(); }
+      else if (key === '-') { this.viewport.zoom(1 / 1.5); this.requestRender(); }
+      else if (key === 'g') { this.displayOptions.showGrid = !this.displayOptions.showGrid; this.syncLeftToolbar(); this.requestRender(); }
+      else if (key === 'l') { this.displayOptions.linesFill = !this.displayOptions.linesFill; this.syncLeftToolbar(); this.requestRender(); }
+      else if (key === 'p') { this.displayOptions.polygonsFill = !this.displayOptions.polygonsFill; this.syncLeftToolbar(); this.requestRender(); }
+      else if (key === 'd') { this.displayOptions.showDcodes = !this.displayOptions.showDcodes; this.syncLeftToolbar(); this.requestRender(); }
+      else if (key === 'PageDown') { this.switchActiveLayer(1); }
+      else if (key === 'PageUp') { this.switchActiveLayer(-1); }
+    });
+
+    this.canvas.addEventListener('dragover', (e) => { e.preventDefault(); this.canvas.parentElement!.classList.add('drag-over'); });
+    this.canvas.addEventListener('dragleave', () => { this.canvas.parentElement!.classList.remove('drag-over'); });
+    this.canvas.addEventListener('drop', (e) => {
+      e.preventDefault(); this.canvas.parentElement!.classList.remove('drag-over');
+      if (e.dataTransfer?.files) this.loadFiles(Array.from(e.dataTransfer.files));
+    });
+  }
+
+  private switchActiveLayer(dir: number) {
+    const loaded: number[] = [];
+    for (let i = 0; i < 32; i++) { if (this.layerManager.getLayer(i)) loaded.push(i); }
+    if (loaded.length === 0) return;
+    const cur = this.displayOptions.activeLayer;
+    let idx = loaded.indexOf(cur);
+    idx = (idx + dir + loaded.length) % loaded.length;
+    this.displayOptions.activeLayer = loaded[idx];
+    this.activeLayerSelect.value = String(loaded[idx]);
+    this.updateLayerPanel(); this.updateFileInfo(); this.requestRender();
+  }
+
+  // ========== 捕捉引擎 ==========
+
+  // 从单个元素提取捕捉点
+  private getItemSnapPoints(item: GerberItem): SnapResult[] {
+    const pts: SnapResult[] = [];
+    const s = item.start, e = item.end;
+
+    if (item.flashed) {
+      // 闪光焊盘：中心点
+      pts.push({ world: s, type: SnapType.Center });
+      return pts;
+    }
+
+    switch (item.shapeType) {
+      case ShapeType.Segment:
+        // 线段：两端点 + 中点
+        pts.push({ world: s, type: SnapType.Endpoint });
+        pts.push({ world: e, type: SnapType.Endpoint });
+        pts.push({ world: pt((s.x + e.x) / 2, (s.y + e.y) / 2), type: SnapType.Midpoint });
+        break;
+
+      case ShapeType.Arc:
+        // 弧：两端点 + 中心 + 弧线中点
+        pts.push({ world: s, type: SnapType.Endpoint });
+        pts.push({ world: e, type: SnapType.Endpoint });
+        pts.push({ world: item.arcCenter, type: SnapType.Center });
+        // 弧线中点（角度中点处）
+        {
+          const cx = item.arcCenter.x, cy = item.arcCenter.y;
+          const r = Math.max(Math.abs(item.size.x), Math.abs(item.size.y)) / 2;
+          if (r > 0) {
+            const aStart = Math.atan2(s.y - cy, s.x - cx);
+            const aEnd = Math.atan2(e.y - cy, e.x - cx);
+            let da = aEnd - aStart;
+            if (item.interpolation === 2) { // ArcCCW
+              if (da <= 0) da += Math.PI * 2;
+            } else { // ArcCW
+              if (da >= 0) da -= Math.PI * 2;
+            }
+            const aMid = aStart + da / 2;
+            pts.push({ world: pt(cx + r * Math.cos(aMid), cy + r * Math.sin(aMid)), type: SnapType.Midpoint });
+          }
+        }
+        break;
+
+      case ShapeType.Circle:
+        // 圆：中心
+        pts.push({ world: item.arcCenter, type: SnapType.Center });
+        break;
+
+      case ShapeType.Polygon:
+        // 多边形：各顶点 + 各边中点
+        if (item.polygonPoints.length > 0) {
+          for (let i = 0; i < item.polygonPoints.length; i++) {
+            pts.push({ world: item.polygonPoints[i], type: SnapType.Endpoint });
+            const next = item.polygonPoints[(i + 1) % item.polygonPoints.length];
+            pts.push({
+              world: pt(
+                (item.polygonPoints[i].x + next.x) / 2,
+                (item.polygonPoints[i].y + next.y) / 2,
+              ),
+              type: SnapType.Midpoint,
+            });
+          }
+        }
+        break;
+
+      default:
+        // Spot 类型等：中心点
+        pts.push({ world: s, type: SnapType.Center });
+        break;
+    }
+    return pts;
+  }
+
+  // 绘制元素高亮轮廓
+  private drawItemHighlight(ctx: CanvasRenderingContext2D, hit: HitResult, color: string, lineW: number) {
+    const { item, layer } = hit;
+    const vp = this.viewport;
+    const tp = (p: Point) => vp.worldToScreen(transformPointWorld(item, layer, p));
+
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineW;
+    ctx.globalAlpha = 0.8;
+    ctx.setLineDash([4, 3]);
+
+    switch (item.shapeType) {
+      case ShapeType.Segment: {
+        ctx.beginPath();
+        ctx.moveTo(tp(item.start).x, tp(item.start).y);
+        ctx.lineTo(tp(item.end).x, tp(item.end).y);
+        ctx.stroke();
+        break;
+      }
+      case ShapeType.Arc: {
+        const center = tp(item.arcCenter);
+        const s = tp(item.start);
+        const e = tp(item.end);
+        const r = Math.sqrt((s.x - center.x) ** 2 + (s.y - center.y) ** 2);
+        if (r > 0.5) {
+          const sa = Math.atan2(s.y - center.y, s.x - center.x);
+          const ea = Math.atan2(e.y - center.y, e.x - center.x);
+          const ccw = item.interpolation === Interpolation.ArcCCW;
+          ctx.beginPath();
+          ctx.arc(center.x, center.y, r, sa, ea, ccw);
+          ctx.stroke();
+        }
+        break;
+      }
+      case ShapeType.Circle:
+      case ShapeType.SpotCircle: {
+        const c = tp(item.start);
+        const r = vp.worldToScreenDist(item.size.x) / 2;
+        ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, Math.PI * 2); ctx.stroke();
+        break;
+      }
+      case ShapeType.Polygon: {
+        if (item.polygonPoints.length >= 3) {
+          const pts = item.polygonPoints.map(tp);
+          ctx.beginPath();
+          ctx.moveTo(pts[0].x, pts[0].y);
+          for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+          ctx.closePath(); ctx.stroke();
+        }
+        break;
+      }
+      default: {
+        // 包围盒高亮
+        const c = tp(item.start);
+        const s = Math.max(vp.worldToScreenDist(item.size.x), vp.worldToScreenDist(item.size.y)) / 2;
+        ctx.strokeRect(c.x - s, c.y - s, s * 2, s * 2);
+        break;
+      }
+    }
+    ctx.restore();
+  }
+
+  // 在屏幕空间中查找最近捕捉点
+  private findSnapPoint(screenPos: Point): SnapResult | null {
+    const worldPos = this.viewport.screenToWorld(screenPos);
+    const worldThreshold = SNAP_THRESHOLD_PX * this.viewport.scale;
+    let bestDist = worldThreshold;
+    let bestSnap: SnapResult | null = null;
+
+    for (let li = 0; li < 32; li++) {
+      const layer = this.layerManager.getLayer(li);
+      if (!layer || !layer.visible) continue;
+      for (const item of layer.items) {
+        const snapPts = this.getItemSnapPoints(item);
+        for (const sp of snapPts) {
+          const dx = sp.world.x - worldPos.x;
+          const dy = sp.world.y - worldPos.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < bestDist) {
+            bestDist = dist;
+            bestSnap = sp;
+          }
+        }
+      }
+    }
+    return bestSnap;
+  }
+
+  private updateCoordDisplay(sp: { x: number; y: number }) {
+    const w = this.viewport.screenToWorld(sp);
+    let xs: string, ys: string;
+    const conv = (v: number) => {
+      switch (this.unitMode) {
+        case 'inch': return (v / 2.54e7).toFixed(5);
+        case 'mil': return (v / 25400).toFixed(2);
+        default: return (v / IU_PER_MM).toFixed(4);
+      }
+    };
+    xs = conv(w.x); ys = conv(w.y);
+    const u = this.unitMode === 'inch' ? 'in' : this.unitMode === 'mil' ? 'mil' : 'mm';
+
+    if (this.polarCoords && this.measureStart) {
+      const dx = w.x - this.measureStart.x;
+      const dy = w.y - this.measureStart.y;
+      const r = conv(Math.sqrt(dx * dx + dy * dy));
+      const theta = (Math.atan2(-dy, dx) * 180 / Math.PI).toFixed(1);
+      this.coordDisplayEl.textContent = `r: ${r} ${u}  θ: ${theta}°`;
+    } else {
+      this.coordDisplayEl.textContent = `X: ${xs}  Y: ${ys} ${u}`;
+    }
+  }
+
+  private resizeCanvas() {
+    const container = this.canvas.parentElement!;
+    const rect = container.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    this.viewport.dpr = dpr;
+    this.canvas.width = rect.width * dpr;
+    this.canvas.height = rect.height * dpr;
+    this.canvas.style.width = rect.width + 'px';
+    this.canvas.style.height = rect.height + 'px';
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    this.viewport.canvasWidth = rect.width;
+    this.viewport.canvasHeight = rect.height;
+  }
+
+  private requestRender() {
+    requestAnimationFrame(() => {
+      this.renderer.render();
+      this.updateZoomDisplay();
+      this.renderOverlays();
+    });
+  }
+
+  private renderOverlays() {
+    const ctx = this.ctx;
+    const w = this.viewport.canvasWidth, h = this.viewport.canvasHeight;
+    const sp = this.cursorScreenPos;
+    const rect = this.canvas.getBoundingClientRect();
+    const inCanvas = sp.x >= 0 && sp.x <= w && sp.y >= 0 && sp.y <= h;
+
+    // 选中元素高亮
+    if (this.selectedItem) {
+      this.drawItemHighlight(ctx, this.selectedItem, this.theme.selectionHighlight, 2.5);
+    }
+    if (this.hoveredItem && this.hoveredItem !== this.selectedItem) {
+      this.drawItemHighlight(ctx, this.hoveredItem, this.theme.selectionHighlight, 1.5);
+    }
+
+    // 全屏十字光标
+    if (this.fullCursor && inCanvas) {
+      ctx.save();
+      ctx.strokeStyle = '#ffffff40';
+      ctx.lineWidth = 0.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(sp.x, 0); ctx.lineTo(sp.x, h);
+      ctx.moveTo(0, sp.y); ctx.lineTo(w, sp.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
+    // 测量尺 — 使用 measurement 模块渲染持久化测量
+    if (this.measureActive) {
+      let cursorWorld: Point | null = null;
+      if (this.currentSnap) cursorWorld = this.currentSnap.world;
+      else if (inCanvas) cursorWorld = this.viewport.screenToWorld(sp);
+
+      renderMeasurements(ctx, this.viewport, this.measureMgr, this.unitMode,
+        this.measureMode, this.measureInProgress, cursorWorld);
+    }
+
+    // 捕捉指示器（测量模式下显示）
+    if (this.measureActive && this.currentSnap && inCanvas) {
+      const snapScreen = this.viewport.worldToScreen(this.currentSnap.world);
+      const sx = snapScreen.x, sy = snapScreen.y;
+      const sz = 6; // 标记半径
+
+      ctx.save();
+      ctx.lineWidth = 1.5;
+
+      if (this.currentSnap.type === SnapType.Endpoint) {
+        // 端点：绿色方形
+        ctx.strokeStyle = '#00ff00';
+        ctx.strokeRect(sx - sz, sy - sz, sz * 2, sz * 2);
+      } else if (this.currentSnap.type === SnapType.Midpoint) {
+        // 中点：黄色菱形
+        ctx.strokeStyle = '#ffff00';
+        ctx.beginPath();
+        ctx.moveTo(sx, sy - sz);
+        ctx.lineTo(sx + sz, sy);
+        ctx.lineTo(sx, sy + sz);
+        ctx.lineTo(sx - sz, sy);
+        ctx.closePath();
+        ctx.stroke();
+      } else if (this.currentSnap.type === SnapType.Center) {
+        // 中心：青色圆 + 十字
+        ctx.strokeStyle = '#00ffff';
+        ctx.beginPath();
+        ctx.arc(sx, sy, sz, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(sx - sz - 2, sy);
+        ctx.lineTo(sx + sz + 2, sy);
+        ctx.moveTo(sx, sy - sz - 2);
+        ctx.lineTo(sx, sy + sz + 2);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  private updateZoomDisplay() {
+    const mm = this.viewport.getZoomMmPerPx();
+    this.zoomDisplayEl.textContent = mm >= 1 ? `缩放: ${mm.toFixed(2)} mm/px`
+      : mm >= 0.01 ? `缩放: ${(mm * 1000).toFixed(1)} µm/px`
+      : `缩放: ${(mm * 1e6).toFixed(1)} nm/px`;
+  }
+
+  private updateFileInfo() {
+    const idx = this.displayOptions.activeLayer;
+    if (idx < 0) {
+      this.fileInfoEl.textContent = 'GerbView';
+      return;
+    }
+    const layer = this.layerManager.getLayer(idx);
+    if (!layer) {
+      this.fileInfoEl.textContent = 'GerbView';
+      return;
+    }
+    const parts: string[] = [layer.fileName || `图层 ${idx}`];
+    if (layer.fileFunction) parts.push(layer.fileFunction);
+    const dCount = layer.items.filter(i => i.dCode >= 10).length;
+    const fCount = layer.items.filter(i => i.flashed).length;
+    const lCount = layer.items.filter(i => !i.flashed).length;
+    parts.push(`${layer.items.length} 项 (线${lCount}/焊盘${fCount})`);
+    if (layer.imagePolarity === 'NEG') parts.push('负极性');
+    this.fileInfoEl.textContent = parts.join(' | ');
+  }
+
+  // ========== 文件操作 ==========
+
+  private openFiles(type: string) {
+    const input = document.createElement('input');
+    input.type = 'file'; input.multiple = true;
+    const gerberExts = '.gbr,.ger,.gtl,.gbl,.gts,.gbs,.gto,.gbo,.gko,.gm1,.gm2,.gm3';
+    const drillExts = '.drl,.txt,.xln,.drd';
+    input.accept = type === 'excellon' ? drillExts
+      : type === 'gerber' ? gerberExts + ',.zip'
+      : gerberExts + ',' + drillExts + ',.zip';
+    input.addEventListener('change', () => { if (input.files?.length) this.loadFiles(Array.from(input.files)); });
+    input.click();
+  }
+
+  private async loadFiles(files: File[]) {
+    for (const file of files) {
+      if (file.name.toLowerCase().endsWith('.zip')) {
+        await this.loadZipFile(file);
+        continue;
+      }
+      await this.loadSingleFile(file);
+    }
+    this.updateLayerPanel(); this.updateActiveLayerSelect(); this.populateX2Selectors(); this.updateFileInfo(); this.zoomFit();
+  }
+
+  private async loadZipFile(file: File) {
+    try {
+      const JSZip = (await import('jszip')).default;
+      const zip = await JSZip.loadAsync(file);
+      const gerberExts = ['.gbr', '.ger', '.gtl', '.gbl', '.gts', '.gbs', '.gto', '.gbo', '.gko', '.gm1', '.gm2', '.gm3', '.gbo'];
+      const drillExts = ['.drl', '.xln', '.drd', '.txt'];
+
+      for (const [path, entry] of Object.entries(zip.files)) {
+        if (entry.dir) continue;
+        const ext = '.' + path.split('.').pop().toLowerCase();
+        if (!gerberExts.includes(ext) && !drillExts.includes(ext)) continue;
+
+        const layerIndex = this.layerManager.getLoadedCount();
+        if (layerIndex >= 32) break;
+
+        const text = await entry.async('string');
+        const fileName = path.split('/').pop() || path;
+        let image: GerberImage;
+        if (detectExcellonFile(text)) {
+          image = new ExcellonParser().parse(text, fileName, layerIndex);
+        } else {
+          image = new GerberParser().parse(text, fileName, layerIndex);
+        }
+        this.layerManager.addLayer(image);
+      }
+    } catch (err) {
+      console.error('ZIP 解压失败:', err);
+    }
+  }
+
+  private async loadSingleFile(file: File) {
+    const layerIndex = this.layerManager.getLoadedCount();
+    if (layerIndex >= 32) return;
+
+    const text = await file.text();
+    let image: GerberImage;
+    if (detectExcellonFile(text)) {
+      image = new ExcellonParser().parse(text, file.name, layerIndex);
+    } else {
+      image = new GerberParser().parse(text, file.name, layerIndex);
+    }
+    this.layerManager.addLayer(image);
+  }
+
+  // ========== 图层面板 ==========
+
+  private updateLayerPanel() {
+    this.layerListEl.innerHTML = '';
+    for (let i = 0; i < 32; i++) {
+      const layer = this.layerManager.getLayer(i);
+      if (!layer) continue;
+
+      const row = document.createElement('div');
+      row.className = 'layer-row' + (this.displayOptions.activeLayer === i ? ' active-layer' : '');
+
+      const arrow = document.createElement('span');
+      arrow.className = 'active-arrow' + (this.displayOptions.activeLayer === i ? '' : ' hidden');
+      arrow.textContent = '▶';
+
+      const cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.className = 'layer-checkbox'; cb.checked = layer.visible;
+      cb.addEventListener('change', (e) => { e.stopPropagation(); layer.visible = cb.checked; this.requestRender(); });
+
+      const swatch = document.createElement('div');
+      swatch.className = 'layer-color-swatch';
+      swatch.style.backgroundColor = layer.color;
+      swatch.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const input = document.createElement('input');
+        input.type = 'color'; input.value = layer.color;
+        input.addEventListener('input', () => { layer.color = input.value; swatch.style.backgroundColor = input.value; this.requestRender(); });
+        input.click();
+      });
+
+      const name = document.createElement('span');
+      name.className = 'layer-name-text';
+      name.textContent = layer.layerName || layer.fileName || `图层 ${i}`;
+      name.title = layer.fileName || '';
+
+      const del = document.createElement('button');
+      del.className = 'layer-del'; del.textContent = '✕';
+      del.addEventListener('click', (e) => {
+        e.stopPropagation(); this.layerManager.removeLayer(i);
+        this.updateLayerPanel(); this.updateActiveLayerSelect(); this.requestRender();
+      });
+
+      // 透明度：滑块 + 数值
+      const opacityWrap = document.createElement('div');
+      opacityWrap.className = 'layer-opacity-wrap';
+      const opacitySlider = document.createElement('input');
+      opacitySlider.type = 'range'; opacitySlider.min = '0'; opacitySlider.max = '100';
+      opacitySlider.value = String(Math.round(layer.opacity * 100));
+      opacitySlider.className = 'layer-opacity-slider';
+      const opacityInput = document.createElement('input');
+      opacityInput.type = 'number'; opacityInput.min = '0'; opacityInput.max = '100';
+      opacityInput.value = String(Math.round(layer.opacity * 100));
+      opacityInput.className = 'layer-opacity-input';
+      opacityInput.title = '透明度 %';
+
+      const syncOpacity = (val: number) => {
+        val = Math.max(0, Math.min(100, val));
+        layer.opacity = val / 100;
+        opacitySlider.value = String(val);
+        opacityInput.value = String(val);
+        this.requestRender();
+      };
+      opacitySlider.addEventListener('input', (e) => {
+        e.stopPropagation();
+        syncOpacity(parseInt(opacitySlider.value));
+      });
+      opacityInput.addEventListener('input', (e) => {
+        e.stopPropagation();
+        const v = parseInt(opacityInput.value);
+        if (!isNaN(v)) syncOpacity(v);
+      });
+      opacitySlider.addEventListener('click', (e) => e.stopPropagation());
+      opacityInput.addEventListener('click', (e) => e.stopPropagation());
+
+      opacityWrap.appendChild(opacitySlider);
+      opacityWrap.appendChild(opacityInput);
+
+      row.appendChild(arrow); row.appendChild(cb); row.appendChild(swatch); row.appendChild(name);
+      row.appendChild(opacityWrap);
+      row.appendChild(del);
+      row.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'BUTTON') return;
+        this.displayOptions.activeLayer = i;
+        this.activeLayerSelect.value = String(i);
+        this.updateLayerPanel(); this.updateFileInfo(); this.requestRender();
+      });
+      row.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        this.showLayerTransformDialog(i);
+      });
+      this.layerListEl.appendChild(row);
+    }
+  }
+
+  private updateActiveLayerSelect() {
+    this.activeLayerSelect.innerHTML = '<option value="-1">无</option>';
+    for (let i = 0; i < 32; i++) {
+      const layer = this.layerManager.getLayer(i);
+      if (!layer) continue;
+      const opt = document.createElement('option');
+      opt.value = String(i); opt.textContent = layer.layerName || layer.fileName || `图层 ${i}`;
+      this.activeLayerSelect.appendChild(opt);
+    }
+    this.activeLayerSelect.value = String(this.displayOptions.activeLayer);
+  }
+
+  private populateX2Selectors() {
+    const allNets = new Set<string>();
+    const allComps = new Set<string>();
+    const allAttrs = new Set<string>();
+    for (let i = 0; i < 32; i++) {
+      const layer = this.layerManager.getLayer(i);
+      if (!layer) continue;
+      layer.netNames.forEach(n => allNets.add(n));
+      layer.componentRefs.forEach(c => allComps.add(c));
+      layer.aperFunctions.forEach(a => allAttrs.add(a));
+    }
+
+    const populate = (sel: HTMLSelectElement, items: Set<string>) => {
+      const prev = sel.value;
+      sel.innerHTML = '<option value="">-</option>';
+      for (const item of [...items].sort()) {
+        const opt = document.createElement('option'); opt.value = item; opt.textContent = item;
+        sel.appendChild(opt);
+      }
+      sel.value = prev;
+    };
+    populate(this._netSel, allNets);
+    populate(this._compSel, allComps);
+    populate(this._attrSel, allAttrs);
+  }
+
+  // ========== 视图 ==========
+
+  private zoomFit() {
+    const bb = this.layerManager.computeTotalBoundingBox();
+    if (bb) this.viewport.fitBoundingBox(bb.min, bb.max);
+    this.requestRender();
+  }
+
+  private clearAll() {
+    this.layerManager.clearAll();
+    this.updateLayerPanel(); this.updateActiveLayerSelect(); this.requestRender();
+  }
+
+  private setAllLayersVisible(v: boolean) {
+    for (let i = 0; i < 32; i++) { const l = this.layerManager.getLayer(i); if (l) l.visible = v; }
+    this.updateLayerPanel(); this.requestRender();
+  }
+
+  private sortLayers() {
+    const layers = this.layerManager.layers.filter(l => l !== null) as GerberImage[];
+    if (layers.length === 0) return;
+    const order: Record<string, number> = {
+      '.gko': 0, '.gm1': 1, '.gtl': 2, '.gto': 3, '.gts': 4, '.gbo': 5,
+      '.gbl': 6, '.gbs': 7, '.drl': 8, '.txt': 9,
+    };
+    layers.sort((a, b) => {
+      const ea = (a.fileName.match(/\.[^.]+$/) || [''])[0].toLowerCase();
+      const eb = (b.fileName.match(/\.[^.]+$/) || [''])[0].toLowerCase();
+      return (order[ea] ?? 99) - (order[eb] ?? 99);
+    });
+    this.layerManager.clearAll();
+    for (const layer of layers) this.layerManager.addLayer(layer);
+    this.updateLayerPanel(); this.updateActiveLayerSelect(); this.requestRender();
+  }
+
+  // ========== 右键上下文菜单 ==========
+
+  private showContextMenu(x: number, y: number) {
+    // 移除已有菜单
+    document.querySelectorAll('.ctx-menu').forEach(m => m.remove());
+
+    const menu = document.createElement('div');
+    menu.className = 'ctx-menu';
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+
+    const items: { label: string; action?: () => void; separator?: boolean; checked?: boolean }[] = [
+      { label: '适应窗口 (Home)', action: () => this.zoomFit() },
+      { label: '放大', action: () => { this.viewport.zoom(1.5); this.requestRender(); } },
+      { label: '缩小', action: () => { this.viewport.zoom(1 / 1.5); this.requestRender(); } },
+      { separator: true, label: '' },
+      { label: '显示网格', action: () => { this.displayOptions.showGrid = !this.displayOptions.showGrid; this.syncLeftToolbar(); this.requestRender(); }, checked: this.displayOptions.showGrid },
+      { label: '高对比度模式', action: () => { this.displayOptions.highContrastMode = !this.displayOptions.highContrastMode; this.syncLeftToolbar(); this.requestRender(); }, checked: this.displayOptions.highContrastMode },
+      { separator: true, label: '' },
+      { label: '焊盘填充', action: () => { this.displayOptions.flashesFill = !this.displayOptions.flashesFill; this.syncLeftToolbar(); this.requestRender(); }, checked: this.displayOptions.flashesFill },
+      { label: '线条填充', action: () => { this.displayOptions.linesFill = !this.displayOptions.linesFill; this.syncLeftToolbar(); this.requestRender(); }, checked: this.displayOptions.linesFill },
+      { label: '多边形填充', action: () => { this.displayOptions.polygonsFill = !this.displayOptions.polygonsFill; this.syncLeftToolbar(); this.requestRender(); }, checked: this.displayOptions.polygonsFill },
+      { separator: true, label: '' },
+      { label: '差异模式', action: () => { this.displayOptions.xorMode = !this.displayOptions.xorMode; this.syncLeftToolbar(); this.requestRender(); }, checked: this.displayOptions.xorMode },
+      { label: '镜像视图', action: () => { this.displayOptions.mirror = !this.displayOptions.mirror; this.syncLeftToolbar(); this.requestRender(); }, checked: this.displayOptions.mirror },
+      { separator: true, label: '' },
+      { label: '导出 PNG...', action: () => this.exportPNG() },
+      { label: '导出 SVG...', action: () => this.exportSVG() },
+      { label: '导出 DXF...', action: () => this.exportDXF() },
+    ];
+
+    for (const item of items) {
+      if (item.separator) {
+        const sep = document.createElement('div'); sep.className = 'ctx-sep';
+        menu.appendChild(sep);
+      } else {
+        const el = document.createElement('div');
+        el.className = 'ctx-item' + (item.checked ? ' checked' : '');
+        el.textContent = item.label;
+        el.addEventListener('click', () => { menu.remove(); item.action?.(); });
+        menu.appendChild(el);
+      }
+    }
+
+    document.body.appendChild(menu);
+
+    // 调整位置避免超出窗口
+    const rect = menu.getBoundingClientRect();
+    if (rect.right > window.innerWidth) menu.style.left = (x - rect.width) + 'px';
+    if (rect.bottom > window.innerHeight) menu.style.top = (y - rect.height) + 'px';
+
+    // 点击任意处关闭
+    const closeHandler = (e: MouseEvent) => {
+      if (!menu.contains(e.target as Node)) { menu.remove(); document.removeEventListener('mousedown', closeHandler); }
+    };
+    setTimeout(() => document.addEventListener('mousedown', closeHandler), 0);
+  }
+
+  private exportPNG() {
+    const link = document.createElement('a');
+    link.download = 'gerbview-export.png';
+    link.href = this.canvas.toDataURL('image/png');
+    link.click();
+  }
+
+  private exportSVG() {
+    const svg = exportToSVG(this.layerManager, this.theme.canvasBackground);
+    if (svg) downloadSVG(svg);
+  }
+
+  private exportDXF() {
+    const dxf = exportToDXF(this.layerManager);
+    if (dxf) downloadDXF(dxf);
+  }
+
+  private showDfmReport() {
+    const report = runDfmAnalysis(this.layerManager);
+    const overlay = document.createElement('div');
+    overlay.className = 'dialog-overlay';
+
+    const dialog = document.createElement('div');
+    dialog.className = 'dialog';
+    dialog.style.minWidth = '380px';
+
+    let html = `<div class="dialog-title">DFM 分析报告</div><div class="dialog-body">`;
+    html += `<div class="dialog-section-title">概览</div>`;
+    html += `<table class="item-detail-table">`;
+    html += `<tr><td>可见图层数</td><td>${report.totalLayers}</td></tr>`;
+    html += `<tr><td>分析项目数</td><td>${report.totalItems}</td></tr>`;
+    html += `</table>`;
+
+    html += `<div class="dialog-section-title">最小尺寸分析</div>`;
+    html += `<table class="item-detail-table">`;
+    html += `<tr><td>最小线宽</td><td>${formatDfmValue(report.minWidth, this.unitMode)}</td></tr>`;
+    html += `<tr><td>最小线距</td><td>${formatDfmValue(report.minSpacing, this.unitMode)}</td></tr>`;
+    html += `<tr><td>最小孔径</td><td>${formatDfmValue(report.minDrillSize, this.unitMode)}</td></tr>`;
+    html += `<tr><td>最小环宽</td><td>${formatDfmValue(report.minAnnularRing, this.unitMode)}</td></tr>`;
+    html += `</table>`;
+
+    html += `</div>`;
+    html += `<div class="dialog-buttons"><button class="dialog-btn dialog-btn-primary" id="dfm-close">关闭</button></div>`;
+    dialog.innerHTML = html;
+    overlay.appendChild(dialog);
+    overlay.querySelector('#dfm-close')!.addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+  }
+
+  // ========== 图层变换对话框 ==========
+
+  private showLayerTransformDialog(layerIdx: number) {
+    const layer = this.layerManager.getLayer(layerIdx);
+    if (!layer) return;
+
+    const overlay = document.createElement('div');
+    overlay.className = 'dialog-overlay';
+
+    const dialog = document.createElement('div');
+    dialog.className = 'dialog';
+
+    const title = document.createElement('div');
+    title.className = 'dialog-title';
+    title.textContent = `图层变换 — ${layer.layerName || layer.fileName}`;
+    dialog.appendChild(title);
+
+    const conv = (v: number) => (v / IU_PER_MM).toFixed(4);
+    const fields: { label: string; id: string; value: string; unit: string }[] = [
+      { label: 'X 偏移', id: 'offX', value: conv(layer.imageOffset.x), unit: 'mm' },
+      { label: 'Y 偏移', id: 'offY', value: conv(layer.imageOffset.y), unit: 'mm' },
+      { label: '旋转', id: 'rot', value: layer.imageRotation.toFixed(1), unit: '°' },
+      { label: '缩放 X', id: 'scaleX', value: layer.scale.x.toFixed(4), unit: '' },
+      { label: '缩放 Y', id: 'scaleY', value: layer.scale.y.toFixed(4), unit: '' },
+    ];
+
+    const inputs: Record<string, HTMLInputElement> = {};
+    for (const f of fields) {
+      const row = document.createElement('div');
+      row.className = 'dialog-row';
+      const lbl = document.createElement('label');
+      lbl.textContent = f.label;
+      const input = document.createElement('input');
+      input.type = 'text'; input.className = 'dialog-input';
+      input.value = f.value; input.id = f.id;
+      const unitSpan = document.createElement('span');
+      unitSpan.className = 'dialog-unit'; unitSpan.textContent = f.unit;
+      row.appendChild(lbl); row.appendChild(input); row.appendChild(unitSpan);
+      dialog.appendChild(row);
+      inputs[f.id] = input;
+    }
+
+    // 镜像复选框
+    const checkRow = document.createElement('div');
+    checkRow.className = 'dialog-check-row';
+    const mkCheck = (label: string, id: string, checked: boolean): HTMLInputElement => {
+      const cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.id = id; cb.checked = checked;
+      const lbl = document.createElement('label');
+      lbl.textContent = label; lbl.htmlFor = id;
+      checkRow.appendChild(cb); checkRow.appendChild(lbl);
+      return cb;
+    };
+    const mirrorACb = mkCheck('镜像 X 轴', 'mirrorA', layer.mirrorA);
+    const mirrorBCb = mkCheck('镜像 Y 轴', 'mirrorB', layer.mirrorB);
+    const swapCb = mkCheck('交换 XY 轴', 'swapAxis', layer.swapAxis);
+    dialog.appendChild(checkRow);
+
+    const btnRow = document.createElement('div');
+    btnRow.className = 'dialog-btn-row';
+    const applyBtn = document.createElement('button');
+    applyBtn.className = 'dialog-btn primary'; applyBtn.textContent = '应用';
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'dialog-btn'; cancelBtn.textContent = '取消';
+    btnRow.appendChild(applyBtn); btnRow.appendChild(cancelBtn);
+    dialog.appendChild(btnRow);
+
+    overlay.appendChild(dialog);
+    document.querySelector('.gerbview-app')!.appendChild(overlay);
+
+    const close = () => overlay.remove();
+    cancelBtn.addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    applyBtn.addEventListener('click', () => {
+      const p = (id: string) => parseFloat(inputs[id].value) || 0;
+      layer.imageOffset = pt(p('offX') * IU_PER_MM, p('offY') * IU_PER_MM);
+      layer.imageRotation = p('rot');
+      layer.scale = pt(p('scaleX'), p('scaleY'));
+      layer.mirrorA = mirrorACb.checked;
+      layer.mirrorB = mirrorBCb.checked;
+      layer.swapAxis = swapCb.checked;
+      // 更新所有该图层 item 的变换参数
+      for (const item of layer.items) {
+        item.layerOffset = { ...layer.imageOffset };
+        item.drawScale = { ...layer.scale };
+        item.mirrorA = layer.mirrorA;
+        item.mirrorB = layer.mirrorB;
+        item.swapAxis = layer.swapAxis;
+        item.layerRotation = layer.imageRotation;
+      }
+      layer.computeBoundingBox();
+      close();
+      this.requestRender();
+    });
+  }
+}
+
+function sep(vertical = false): HTMLElement {
+  const s = document.createElement('div');
+  s.className = vertical ? 'lt-sep' : 'tb-sep';
+  return s;
+}
