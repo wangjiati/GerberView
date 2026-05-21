@@ -1,3 +1,4 @@
+import JSZip from 'jszip';
 import { Viewport } from '../renderer/viewport';
 import { Renderer, DisplayOptions, DEFAULT_DISPLAY_OPTIONS } from '../renderer/renderer';
 import { LayerManager, GerberImage } from '../model/gerber-image';
@@ -1257,7 +1258,6 @@ export class App {
 
   private async loadZipFile(file: File) {
     try {
-      const JSZip = (await import('jszip')).default;
       const zip = await JSZip.loadAsync(file);
       const gerberExts = ['.gbr', '.ger', '.gtl', '.gbl', '.gts', '.gbs', '.gto', '.gbo', '.gko', '.gm1', '.gm2', '.gm3', '.gbo'];
       const drillExts = ['.drl', '.xln', '.drd', '.txt'];
