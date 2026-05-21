@@ -1,0 +1,16 @@
+; This is example 1
+M48
+; #@! TF.FileFunction,NonPlated,1,4,NPTH
+; #@! TF.CreationDate,2018-11-23T15:59:51+01:00
+; #@! TF.GenerationSoftware,Ucamco,UcamX,2018.10
+METRIC
+; #@! TA.AperFunction,MechanicalDrill
+T01C4.500
+%
+T01
+G05
+X115.000Y005.000
+X005.000Y115.000
+X005.000Y005.000
+M30
+

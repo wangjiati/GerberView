@@ -1,0 +1,41 @@
+{
+  "Header": {
+    "GenerationSoftware": { 
+      "Vendor":      "Ucamco",
+      "Application": "UcamX",
+      "Version":     "2017.12"
+    },
+    "CreationDate":  "2018-01-20T15:59:51+01:00",
+    "Comment":       "Example"
+  },
+  "GeneralSpecs": {
+    "Owner": "Galactic Corporation",
+    "ProjectId": {    
+      "Name":     "HFDF Controller nRF52832",
+      "GUID":     "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+      "Revision": "Rev. 2b"
+     },
+    "Size": {
+     "X": 160.0,
+     "Y":  50.8
+    },
+    "LayerNumber":     4,
+    "BoardThickness":  1.6,
+    "ROHS":            true,
+    "B_IPC-600-Class": 2,
+    "Finish":          "ENIG"
+  },
+  "MaterialStackup": [
+    { "Type": "Legend",      "Color":     "White" },
+    { "Type": "SolderMask",  "Color":     "Green" },
+    { "Type": "Copper",      "Thickness": 0.03556 },
+    { "Type": "Dielectric"                        },
+    { "Type": "Copper",      "Thickness": 0.01500 },
+    { "Type": "Dielectric"                        },
+    { "Type": "Copper",      "Thickness": 0.01500 },
+    { "Type": "Dielectric"                        },
+    { "Type": "Copper",      "Thickness": 0.03556 },
+    { "Type": "SolderMask",  "Color":     "Green" }
+  ]
+}
+

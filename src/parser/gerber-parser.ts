@@ -32,6 +32,7 @@ export class GerberParser {
   private interpolation: Interpolation = Interpolation.Linear;
   private arcQuadrantMode: ArcQuadrantMode = ArcQuadrantMode.Multi;
   private polygonFillMode: boolean = false;
+  private polygonExposure: boolean = false; // G36-G37 中的曝光状态
   private polygonPoints: Point[] = [];
   private polygonItemCount: number = 0;
 
@@ -80,6 +81,7 @@ export class GerberParser {
     this.interpolation = Interpolation.Linear;
     this.arcQuadrantMode = ArcQuadrantMode.Multi;
     this.polygonFillMode = false;
+    this.polygonExposure = false;
     this.polygonPoints = [];
     this.polygonItemCount = 0;
     this.currentPos = pt(0, 0);
@@ -127,6 +129,39 @@ export class GerberParser {
     let inBlock = false;
     let blockContent = '';
 
+    const processAfter = (after: string) => {
+      // 处理 % 块结束后的剩余内容
+      // 可能包含新的 % 块或普通数据
+      if (after.length === 0) return;
+      if (after.endsWith('%')) {
+        // 内容以 % 结尾：从上一个 % 关闭到此 % 之间的内容是一个完整的块
+        // 例如：after = "ADD10DONUT,0.1X0.05*%" → block content = "ADD10DONUT,0.1X0.05*"
+        tokens.push({ type: 'block', content: after.substring(0, after.length - 1) });
+      } else if (after.includes('%')) {
+        // 内容中间有 %：分割处理
+        // 例如：after = "G01X1000D02*%ADD10C,0.01*%"
+        const pStart = after.indexOf('%');
+        // % 之前的数据
+        if (pStart > 0) {
+          tokens.push({ type: 'data', content: after.substring(0, pStart) });
+        }
+        // % 之后的内容
+        const pRest = after.substring(pStart + 1);
+        const pEnd = pRest.indexOf('%');
+        if (pEnd !== -1) {
+          // 内含完整的 %...% 块
+          tokens.push({ type: 'block', content: pRest.substring(0, pEnd) });
+          processAfter(pRest.substring(pEnd + 1).trim());
+        } else {
+          // 开始新的多行块
+          inBlock = true;
+          blockContent = pRest;
+        }
+      } else {
+        tokens.push({ type: 'data', content: after });
+      }
+    };
+
     for (const rawLine of lines) {
       const line = rawLine.trim();
       if (line.length === 0) continue;
@@ -147,11 +182,7 @@ export class GerberParser {
         if (endIdx !== -1) {
           // 单行 %...% 块
           tokens.push({ type: 'block', content: rest.substring(0, endIdx) });
-          // 如果 %...% 后面还有内容（罕见但可能）
-          const after = rest.substring(endIdx + 1).trim();
-          if (after.length > 0) {
-            tokens.push({ type: 'data', content: after });
-          }
+          processAfter(rest.substring(endIdx + 1).trim());
         } else {
           // 多行块开始
           inBlock = true;
@@ -166,11 +197,7 @@ export class GerberParser {
           tokens.push({ type: 'block', content: blockContent });
           blockContent = '';
           inBlock = false;
-          // % 后面的内容
-          const after = line.substring(endIdx + 1).trim();
-          if (after.length > 0) {
-            tokens.push({ type: 'data', content: after });
-          }
+          processAfter(line.substring(endIdx + 1).trim());
         } else {
           // 块内容继续
           blockContent += '*' + line;
@@ -189,7 +216,7 @@ export class GerberParser {
   // 处理 %...% 块
   private processBlock(content: string) {
     // 提取命令 ID（前两个字母）
-    const cleaned = content.replace(/^\s+/, '');
+    const cleaned = content.replace(/^\s+/, '').replace(/\*+$/, '');
     if (cleaned.length < 2) return;
 
     const cmdId = cleaned.substring(0, 2).toUpperCase();
@@ -254,12 +281,17 @@ export class GerberParser {
       case 'MI': this.parseMirrorImage(body); break;
       case 'AS': this.parseAxisSelect(body); break;
       case 'IC': break; // Image Justify - 简化处理
-      case 'IJ': break; // Image Justify
+      case 'IJ': this.parseImageJustify(body); break;
+      case 'LM': this.parseLayerMirror(body); break;
+      case 'LR': this.parseLayerRotation(body); break;
+      case 'LS': this.parseLayerScaling(body); break;
+      case 'KO': break; // Knockout - 忽略（与 KiCad 一致）
+      case 'IN': break; // Image Name - 已弃用
       case 'RO': this.parseRotation(body); break;
       case 'TF': this.parseFileAttribute(body); break;
       case 'TA': this.parseApertureAttribute(body); break;
       case 'TO': this.parseObjectAttribute(body); break;
-      case 'TD': this.aperFunction = ''; this.currentNetAttrs = []; this.currentNetName = ''; this.currentCompRef = ''; break;
+      case 'TD': this.parseDeleteAttribute(body); break;
     }
   }
 
@@ -325,6 +357,8 @@ export class GerberParser {
 
   private parseStepAndRepeat(body: string) {
     // 格式: SR X3 Y2 I5.0 J2
+    // KiCad: SR 重置插补模式为线性
+    this.interpolation = Interpolation.Linear;
     const vals = this.extractParamValues(body);
     this.stepAndRepeat.countX = vals.X ?? 1;
     this.stepAndRepeat.countY = vals.Y ?? 1;
@@ -378,6 +412,8 @@ export class GerberParser {
   }
 
   private parseRotation(body: string) {
+    // KiCad: RO 重置插补模式为线性
+    this.interpolation = Interpolation.Linear;
     const val = parseFloat(body);
     if (!isNaN(val)) {
       this.localRotation = val;
@@ -385,15 +421,90 @@ export class GerberParser {
     }
   }
 
+  // %LM N|XY|Y|X*%
+  private parseLayerMirror(body: string) {
+    const cleaned = body.replace(/\*/g, '').trim().toUpperCase();
+    if (cleaned === 'N') {
+      // No mirror
+    } else if (cleaned === 'XY') {
+      this.mirrorA = true;
+      this.mirrorB = true;
+    } else if (cleaned === 'X') {
+      this.mirrorA = true;
+    } else if (cleaned === 'Y') {
+      this.mirrorB = true;
+    }
+    this.image.mirrorA = this.mirrorA;
+    this.image.mirrorB = this.mirrorB;
+  }
+
+  // %LR<decimal>*% — 层旋转
+  private parseLayerRotation(body: string) {
+    const val = parseFloat(body);
+    if (!isNaN(val)) {
+      this.localRotation = val;
+      this.image.localRotation = val;
+    }
+  }
+
+  // %LS<decimal>*% — 层缩放
+  private parseLayerScaling(body: string) {
+    const val = parseFloat(body);
+    if (!isNaN(val) && val > 0) {
+      this.scale = pt(val, val);
+      this.image.scale = { ...this.scale };
+    }
+  }
+
+  // %IJ [A[C|L|<coord>]] [B[C|L|<coord>]] *% — 图像对齐
+  private parseImageJustify(body: string) {
+    // 简化处理：只解析偏移值
+    const vals = this.extractParamValues(body);
+    if (vals.A !== undefined) {
+      this.image.imageOffset = pt(this.convertToNm(vals.A), this.image.imageOffset.y);
+    }
+    if (vals.B !== undefined) {
+      this.image.imageOffset = pt(this.image.imageOffset.x, this.convertToNm(vals.B));
+    }
+  }
+
   private parseFileAttribute(body: string) {
-    // %TF.FileFunction,Copper,L1,Top*% 等
+    // %TF.FileFunction,Copper,L1,Top*% 或 %TF.FilePolarity,Negative*%
     const parts = body.split(',');
     if (parts.length > 0) {
       const func = parts[0];
       this.image.fileFunction = body;
       if (func === '.FileFunction' && parts.length > 1) {
         // 存储文件功能信息
+      } else if (func === '.FilePolarity' && parts.length > 1) {
+        // TF.FilePolarity is informational metadata only — it does NOT affect rendering.
+        // Actual polarity is controlled by %IPNEG*%/%IPPOS*% and %LPD*%/%LPC*% commands.
+        // Stored for display purposes only.
+        this.image.filePolarity = parts[1].replace(/\*+$/, '').trim();
       }
+    }
+  }
+
+  private parseDeleteAttribute(body: string) {
+    // %TD*% 清除所有属性
+    // %TD.AperFunction*% 只清除光圈属性
+    // %TD.N*% 只清除网络属性
+    // %TD.C*% 只清除元件属性
+    const cleaned = body.replace(/\*/g, '').trim();
+    if (cleaned.length === 0 || cleaned === '.') {
+      // 清除所有
+      this.aperFunction = '';
+      this.currentNetAttrs = [];
+      this.currentNetName = '';
+      this.currentCompRef = '';
+    } else if (cleaned === '.AperFunction') {
+      this.aperFunction = '';
+    } else if (cleaned === '.N') {
+      this.currentNetName = '';
+    } else if (cleaned === '.C') {
+      this.currentCompRef = '';
+    } else if (cleaned === '.P') {
+      // Pad attributes cleared
     }
   }
 
@@ -413,9 +524,16 @@ export class GerberParser {
         this.currentNetName = parts[1];
         this.image.netNames.add(parts[1]);
       } else if (type === '.C' && parts.length > 1) {
+        // .C,<ref> — 设置元件参考
+        this.currentCompRef = parts[1];
+        this.image.componentRefs.add(parts[1]);
+      } else if (type === '.P' && parts.length > 2) {
+        // .P,<ref>,<padname>[,<pinfunction>]
         this.currentCompRef = parts[1];
         this.image.componentRefs.add(parts[1]);
       }
+      // .CRot, .CVal, .CMnt, .CFtp, .CMfr, .CMPN 等扩展属性
+      // 都属于当前元件的属性，不需要特殊处理，只需存储
     }
     this.currentNetAttrs.push(body);
   }
@@ -423,8 +541,10 @@ export class GerberParser {
   // ========== 光圈定义解析 ==========
 
   private parseApertureDefinition(body: string) {
-    // 格式: ADD10C,0.065 或 ADD11MACRONAME,0.5X1X0
-    const dCodeMatch = body.match(/^(\d+)(.*)/);
+    // 格式: body 来自 "ADD10C,0.065" 去掉 "AD" 后为 "D10C,0.065"
+    // 也可能是 "10C,0.065"（取决于 tokenize 处理）
+    const cleaned = body.replace(/^\*/, '').replace(/\*$/, '');
+    const dCodeMatch = cleaned.match(/^D?(\d+)(.*)/i);
     if (!dCodeMatch) return;
 
     const dCodeNum = parseInt(dCodeMatch[1]);
@@ -434,23 +554,27 @@ export class GerberParser {
     const dc = this.image.getDCcode(dCodeNum);
     dc.numDcode = dCodeNum;
     dc.defined = true;
+    dc.aperFunction = this.aperFunction; // KiCad: 复制当前光圈功能
 
     // 确定光圈类型
     if (rest.length === 0) return;
 
-    const typeChar = rest[0].toUpperCase();
-    const paramsStr = rest.substring(1);
+    // 参数从逗号之后开始，如果没有逗号则为空
+    const commaPos = rest.indexOf(',');
+    const paramsStr = commaPos >= 0 ? rest.substring(commaPos + 1) : '';
+    // 标准光圈类型是逗号前的单个字母（C/R/O/P），多个字符则是宏引用
+    const typeStr = commaPos >= 0 ? rest.substring(0, commaPos) : '';
 
-    if (typeChar === 'C') {
+    if (typeStr === 'C') {
       dc.apertureType = ApertureType.Circle;
       this.parseCircleAperture(dc, paramsStr);
-    } else if (typeChar === 'R') {
+    } else if (typeStr === 'R') {
       dc.apertureType = ApertureType.Rect;
       this.parseRectAperture(dc, paramsStr);
-    } else if (typeChar === 'O') {
+    } else if (typeStr === 'O') {
       dc.apertureType = ApertureType.Oval;
       this.parseOvalAperture(dc, paramsStr);
-    } else if (typeChar === 'P') {
+    } else if (typeStr === 'P') {
       dc.apertureType = ApertureType.Polygon;
       this.parsePolygonAperture(dc, paramsStr);
     } else {
@@ -516,15 +640,124 @@ export class GerberParser {
   }
 
   private parseMacroAperture(dc: DCode, rest: string) {
-    // 格式: MACRONAME,param1Xparam2Xparam3
-    const commaIdx = rest.indexOf(',');
-    const macroName = commaIdx >= 0 ? rest.substring(0, commaIdx) : rest;
-    const paramsStr = commaIdx >= 0 ? rest.substring(commaIdx + 1) : '';
+    // 格式: MACRONAME,param1Xparam2Xparam3 或 MACRONAME*
+    const cleaned = rest.replace(/\*+$/, '');
+    const commaIdx = cleaned.indexOf(',');
+    const macroName = commaIdx >= 0 ? cleaned.substring(0, commaIdx) : cleaned;
+    const paramsStr = commaIdx >= 0 ? cleaned.substring(commaIdx + 1) : '';
 
     dc.macro = this.image.getApertureMacro(macroName) ?? null;
     dc.macroParams = paramsStr.length > 0
       ? paramsStr.split('X').map(v => parseFloat(v))
       : [];
+
+    // 从宏图元计算光圈尺寸
+    if (dc.macro) {
+      this.computeMacroApertureSize(dc);
+    }
+  }
+
+  private computeMacroApertureSize(dc: DCode) {
+    if (!dc.macro) return;
+    const params = dc.macroParams;
+    const toNm = (val: number) => val * IU_PER_MM;
+    let maxExtent = 0;
+
+    for (const prim of dc.macro.primitives) {
+      const p = (idx: number): number => {
+        if (idx >= prim.params.length) return 0;
+        return prim.params[idx].evaluate(params);
+      };
+
+      switch (prim.id) {
+        case MacroPrimitiveId.Circle: {
+          const diameter = toNm(p(1));
+          const cx = toNm(p(2)), cy = toNm(p(3));
+          const r = diameter / 2;
+          maxExtent = Math.max(maxExtent, Math.abs(cx) + r, Math.abs(cy) + r);
+          break;
+        }
+        case MacroPrimitiveId.Outline: {
+          const n = Math.round(p(1));
+          for (let i = 0; i < n; i++) {
+            maxExtent = Math.max(maxExtent, Math.abs(toNm(p(2 + i * 2))), Math.abs(toNm(p(3 + i * 2))));
+          }
+          break;
+        }
+        case MacroPrimitiveId.Line20:
+        case MacroPrimitiveId.Line2: {
+          const width = toNm(p(1));
+          const sx = toNm(p(2)), sy = toNm(p(3));
+          const ex = toNm(p(4)), ey = toNm(p(5));
+          const rotation = (p(6) ?? 0) * Math.PI / 180;
+          const hw = width / 2;
+          // 计算线条矩形的 4 个角点（旋转前）
+          const dx = ex - sx, dy = ey - sy;
+          const len = Math.sqrt(dx * dx + dy * dy);
+          let corners: [number, number][];
+          if (len < 1e-6) {
+            corners = [[sx - hw, sy - hw], [sx + hw, sy - hw], [sx + hw, sy + hw], [sx - hw, sy + hw]];
+          } else {
+            const dirAngle = Math.atan2(dy, dx);
+            const c = Math.cos(dirAngle), s = Math.sin(dirAngle);
+            const pts = [[0, hw], [len, hw], [len, -hw], [0, -hw]];
+            corners = pts.map(([px, py]) => [px * c - py * s + sx, px * s + py * c + sy] as [number, number]);
+          }
+          // 应用 rotation 参数
+          if (Math.abs(rotation) > 0.001) {
+            const cr = Math.cos(rotation), sr = Math.sin(rotation);
+            corners = corners.map(([x, y]) => [x * cr - y * sr, x * sr + y * cr] as [number, number]);
+          }
+          for (const [cx, cy] of corners) {
+            maxExtent = Math.max(maxExtent, Math.abs(cx), Math.abs(cy));
+          }
+          break;
+        }
+        case MacroPrimitiveId.LineCenter: {
+          const width = toNm(p(1)), height = toNm(p(2));
+          const cx = toNm(p(3)), cy = toNm(p(4));
+          maxExtent = Math.max(maxExtent,
+            Math.abs(cx) + width / 2, Math.abs(cy) + height / 2);
+          break;
+        }
+        case MacroPrimitiveId.LineLowerLeft: {
+          const width = toNm(p(1)), height = toNm(p(2));
+          const x = toNm(p(3)), y = toNm(p(4));
+          maxExtent = Math.max(maxExtent,
+            Math.max(Math.abs(x), Math.abs(x + width)) + 0,
+            Math.max(Math.abs(y), Math.abs(y + height)));
+          break;
+        }
+        case MacroPrimitiveId.Polygon5: {
+          const nV = Math.round(p(1));
+          const cx = toNm(p(2)), cy = toNm(p(3));
+          const diameter = toNm(p(4));
+          maxExtent = Math.max(maxExtent,
+            Math.abs(cx) + diameter / 2, Math.abs(cy) + diameter / 2);
+          break;
+        }
+        case MacroPrimitiveId.Moire: {
+          const cx = toNm(p(0)), cy = toNm(p(1));
+          const outerDia = toNm(p(2));
+          const crossLen = toNm(p(7));
+          maxExtent = Math.max(maxExtent,
+            Math.abs(cx) + outerDia / 2, Math.abs(cy) + outerDia / 2,
+            Math.abs(cx) + crossLen / 2, Math.abs(cy) + crossLen / 2);
+          break;
+        }
+        case MacroPrimitiveId.Thermal: {
+          const cx = toNm(p(0)), cy = toNm(p(1));
+          const outerDia = toNm(p(2));
+          maxExtent = Math.max(maxExtent,
+            Math.abs(cx) + outerDia / 2, Math.abs(cy) + outerDia / 2);
+          break;
+        }
+      }
+    }
+
+    if (maxExtent > 0) {
+      dc.size = pt(maxExtent * 2, maxExtent * 2);
+    }
   }
 
   private parseApertureParams(params: string): number[] {
@@ -731,9 +964,8 @@ export class GerberParser {
       case 4: {
         // G04 注释 — 也可能是 X2 结构化注释 (G04 #@! ...)
         const rest = this.line.substring(this.pos);
-        const scMatch = rest.match(/^#\@!\s*(.+)/);
+        const scMatch = rest.match(/^\s*#\@!\s*(.+)/);
         if (scMatch) {
-          // 结构化注释，当作 % 块处理
           const scBody = scMatch[1].replace(/\*$/, '').trim();
           if (scBody.length >= 2) {
             const cmdId = scBody.substring(0, 2).toUpperCase();
@@ -741,19 +973,25 @@ export class GerberParser {
             this.executeRS274XCommand(cmdId, cmdBody);
           }
         }
+        // 跳过注释剩余内容，防止其中 D/N/M 等字符被误解析
+        this.pos = this.line.length;
         break;
       }
       case 36: // 开始区域填充
         this.polygonFillMode = true;
+        this.polygonExposure = false;
         this.polygonPoints = [];
         this.polygonItemCount = 0;
         break;
       case 37: // 结束区域填充
-        if (this.polygonFillMode && this.polygonPoints.length >= 3) {
+        if (this.polygonFillMode && this.polygonExposure && this.polygonPoints.length >= 3) {
           this.createPolygonItem();
         }
         this.polygonFillMode = false;
+        this.polygonExposure = false;
         this.polygonPoints = [];
+        this.polygonItemCount = 0;
+        this.interpolation = Interpolation.Linear; // KiCad: G37 后重置插补
         break;
       case 54: // 选择工具（已弃用，下一个 D 代码是工具号）
         break;
@@ -794,7 +1032,10 @@ export class GerberParser {
     // D01 - 画线或圆弧
     if (this.polygonFillMode) {
       // 在区域模式下，添加点
-      if (this.polygonPoints.length === 0) {
+      if (!this.polygonExposure) {
+        // 第一个 D01：开始新的多边形
+        this.polygonExposure = true;
+        this.polygonPoints = [];
         this.polygonPoints.push({ ...this.previousPos });
       }
       // 判断是否为弧（有 IJ 数据且插补为弧模式）
@@ -824,8 +1065,9 @@ export class GerberParser {
     let icx = this.ijPos.x;
     let icy = this.ijPos.y;
     if (this.arcQuadrantMode === ArcQuadrantMode.Single) {
-      icx = this.computeSingleQuadrantIC(icx, icy);
-      icy = this.computeSingleQuadrantJC(icx, icy);
+      const ij = this.computeSingleQuadrantIJ(icx, icy);
+      icx = ij.x;
+      icy = ij.y;
     }
     const cx = start.x + icx;
     const cy = start.y + icy;
@@ -866,9 +1108,13 @@ export class GerberParser {
 
   private executeD02() {
     // D02 - 移动（不画）
-    if (this.polygonFillMode && this.polygonPoints.length > 0) {
-      // 在区域模式下的 D02 通常表示新起点
-      // KiCad 行为：如果之前没有 D01，则只设置起点
+    if (this.polygonFillMode) {
+      // KiCad: D02 在多边形模式下关闭当前多边形并 StepAndRepeat
+      if (this.polygonExposure && this.polygonPoints.length >= 3) {
+        this.createPolygonItem();
+      }
+      this.polygonExposure = false;
+      this.polygonPoints = [];
     }
     this.previousPos = { ...this.currentPos };
     this.lastPenCommand = 2;
@@ -922,56 +1168,54 @@ export class GerberParser {
 
     if (this.arcQuadrantMode === ArcQuadrantMode.Single) {
       // 单象限模式：I/J 是无符号绝对值，需根据起终点推断符号
-      icx = this.computeSingleQuadrantIC(icx, icy);
-      icy = this.computeSingleQuadrantJC(icx, icy);
+      const ij = this.computeSingleQuadrantIJ(icx, icy);
+      icx = ij.x;
+      icy = ij.y;
     }
 
     // 圆心 = 起点 + IJ 偏移
     item.arcCenter = pt(this.previousPos.x + icx, this.previousPos.y + icy);
     item.dCode = this.currentTool;
     item.flashed = false;
-    item.size = pt(dc.size.x, dc.size.x);
+    item.size = { ...dc.size };
 
     this.applyItemTransform(item);
     this.addItemWithStepAndRepeat(item);
   }
 
   // 单象限模式：根据弧线方向和起终点推断 IC 的符号
-  private computeSingleQuadrantIC(ic: number, jc: number): number {
+  /**
+   * 单象限模式：推断 I/J 的符号（KiCad fillArcGBRITEM 算法）
+   * I/J 在单象限模式下总是非负的，需要根据起终点相对位置和弧方向推断符号
+   */
+  private computeSingleQuadrantIJ(ic: number, jc: number): Point {
     const dx = this.currentPos.x - this.previousPos.x;
     const dy = this.currentPos.y - this.previousPos.y;
     const cw = this.interpolation === Interpolation.ArcCW;
-    const absIc = Math.abs(ic);
+    let centerIC = Math.abs(ic);
+    let centerJC = Math.abs(jc);
 
-    if (ic === 0 && jc !== 0) {
-      // 只有 J，推断 I = sqrt(R² - J²) 或 I = 0
-      return 0;
-    }
-
-    // 推断 I 的符号
-    if (cw) {
-      return dx >= 0 ? absIc : -absIc;
+    if (dx >= 0 && dy >= 0) {
+      // 第一象限 (trigo/cclockwise)
+      centerIC = -centerIC;
+    } else if (dx >= 0 && dy < 0) {
+      // 第四象限
+    } else if (dx < 0 && dy >= 0) {
+      // 第二象限
+      centerIC = -centerIC;
+      centerJC = -centerJC;
     } else {
-      return dx >= 0 ? -absIc : absIc;
-    }
-  }
-
-  // 单象限模式：根据弧线方向和起终点推断 JC 的符号
-  private computeSingleQuadrantJC(ic: number, jc: number): number {
-    const dx = this.currentPos.x - this.previousPos.x;
-    const dy = this.currentPos.y - this.previousPos.y;
-    const cw = this.interpolation === Interpolation.ArcCW;
-    const absJc = Math.abs(jc);
-
-    if (jc === 0 && ic !== 0) {
-      return 0;
+      // 第三象限
+      centerJC = -centerJC;
     }
 
-    if (cw) {
-      return dy >= 0 ? -absJc : absJc;
-    } else {
-      return dy >= 0 ? absJc : -absJc;
+    // 对于 CCW，取反
+    if (!cw) {
+      centerIC = -centerIC;
+      centerJC = -centerJC;
     }
+
+    return pt(centerIC, centerJC);
   }
 
   private createFlashItem() {

@@ -90,7 +90,7 @@ function renderMeasurement(ctx: CanvasRenderingContext2D, viewport: Viewport, m:
   ctx.save();
   ctx.globalAlpha = alpha;
 
-  if (m.mode === MeasureMode.PointToPoint || m.mode === MeasureMode.EdgeToEdge) {
+  if (m.mode === MeasureMode.PointToPoint) {
     const s = viewport.worldToScreen(m.points[0]);
     const e = viewport.worldToScreen(m.points[m.points.length - 1]);
     // 连线

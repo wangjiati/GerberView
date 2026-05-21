@@ -332,6 +332,24 @@ html, body {
   stroke-width: 1;
 }
 
+/* 左侧工具栏自定义 tooltip (JS 定位到 body) */
+.lt-tooltip {
+  position: fixed;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  white-space: pre-line;
+  pointer-events: none;
+  z-index: 10000;
+  min-width: 120px;
+  max-width: 260px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
 .lt-sep {
   width: 24px;
   height: 1px;
@@ -443,6 +461,17 @@ html, body {
   flex-direction: column;
   flex-shrink: 0;
   user-select: none;
+  overflow: hidden;
+}
+
+.layer-panel-resizer {
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  flex-shrink: 0;
+}
+.layer-panel-resizer:hover {
+  background: var(--accent);
 }
 
 .layer-panel.hidden {
@@ -511,6 +540,20 @@ html, body {
   background: rgba(0, 122, 204, 0.2);
 }
 
+.layer-row.drag-over-top {
+  border-top: 2px solid var(--accent);
+}
+.layer-row.drag-over-bottom {
+  border-bottom: 2px solid var(--accent);
+}
+
+.layer-row[draggable="true"] {
+  cursor: grab;
+}
+.layer-row[draggable="true"]:active {
+  cursor: grabbing;
+}
+
 .layer-row .active-arrow {
   width: 14px;
   text-align: center;
@@ -550,6 +593,22 @@ html, body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 40px;
+}
+
+.layer-type-select {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  padding: 1px 2px;
+  max-width: 70px;
+  cursor: pointer;
+}
+.layer-type-select:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .layer-del {

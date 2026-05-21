@@ -90,6 +90,15 @@ export class ExcellonParser {
         const code = parseInt(mMatch[1]);
         if (code === 71) this.unit = GerberUnit.Metric;
         else if (code === 72) this.unit = GerberUnit.Inch;
+        else if (code === 15) {
+          // M15: 开始铣削/路由（XNC 格式）
+          if (line.includes('X') || line.includes('Y')) this.processCoordLine(line);
+        }
+        else if (code === 16) {
+          // M16: 结束铣削/路由（XNC 格式）
+          if (line.includes('X') || line.includes('Y')) this.processCoordLine(line);
+          this.finishRoute();
+        }
         else if (code === 30 || code === 0) return;
       }
       return;
@@ -170,17 +179,21 @@ export class ExcellonParser {
     switch (code) {
       case 0: // 路由模式
         this.drillMode = false;
+        // G00 可带坐标，先解析坐标再初始化路由
+        if (line.includes('X') || line.includes('Y')) this.processCoordLine(line.substring(line.indexOf('X') > -1 ? line.indexOf('X') : line.indexOf('Y')));
         this.routeStart = { ...this.currentPos };
         this.routePoints = [{ ...this.currentPos }];
-        // G00 可带坐标
-        if (line.includes('X') || line.includes('Y')) this.processCoordLine(line.substring(line.indexOf('X') > -1 ? line.indexOf('X') : line.indexOf('Y')));
         break;
       case 1: // 线性路由
+        // G01 可带坐标
+        if (line.includes('X') || line.includes('Y')) this.processCoordLine(line.substring(line.indexOf('X') > -1 ? line.indexOf('X') : line.indexOf('Y')));
         this.routePoints.push({ ...this.currentPos });
         break;
       case 2: // CW 圆弧路由
       case 3: // CCW 圆弧路由
-        // 简化：忽略圆弧路由的圆弧部分，按直线处理
+        // 简化：解析坐标后按直线处理
+        if (line.includes('X') || line.includes('Y')) this.processCoordLine(line.substring(line.indexOf('X') > -1 ? line.indexOf('X') : line.indexOf('Y')));
+        this.routePoints.push({ ...this.currentPos });
         break;
       case 5: // 回到钻孔模式
         this.finishRoute();

@@ -1,6 +1,6 @@
 import { LayerManager, GerberImage } from '../model/gerber-image';
 import { GerberItem, Point } from '../model/gerber-item';
-import { ShapeType, IU_PER_MM, ApertureType } from '../model/enums';
+import { ShapeType, IU_PER_MM, ApertureType, DrillShape } from '../model/enums';
 import { transformPointWorld } from './transform';
 
 export interface DfmReport {
@@ -74,10 +74,10 @@ export function runDfmAnalysis(layerManager: LayerManager): DfmReport {
   // 2. 最小孔径和最小环宽
   for (const { item, layerIdx, layer } of allItems) {
     if (!item.flashed || item.dCode <= 0) continue;
-    const dc = layer.getDCode(item.dCode);
+    const dc = layer.getDCcode(item.dCode);
     if (!dc) continue;
 
-    if (dc.drillShape !== 0 /* NoHole */ && dc.drill.x > 0) {
+    if (dc.drillShape !== DrillShape.NoHole && dc.drill.x > 0) {
       const drillDiameter = Math.min(dc.drill.x, dc.drill.y || dc.drill.x);
       if (drillDiameter < report.minDrillSize) {
         report.minDrillSize = drillDiameter;

@@ -1,0 +1,342 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "JSON Schema for the Gerber Job File Specification",
+    "description": "This is the latest schema for the Gerber Job File according to revision 2023.06",
+    "type": "object",
+    "properties": {
+        "Header": {
+            "type": "object",
+            "properties": {
+                "GenerationSoftware": {
+                    "type": "object",
+                    "properties": {
+                        "Vendor": {
+                            "type": "string"
+                        },
+                        "Application": {
+                            "type": "string"
+                        },
+                        "Version": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "CreationDate": {
+                    "type": "string",
+                    "anyOf": [
+                        {
+                            "format": "date-time"
+                        },
+                        {
+                            "format": "date"
+                        }
+                    ]
+                },
+                "Comment": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
+        },
+        "GeneralSpecs": {
+            "type": "object",
+            "properties": {
+                "ProjectId": {
+                    "type": "object",
+                    "properties": {
+                        "Name": {
+                            "type": "string"
+                        },
+                        "GUID": {
+                            "type": "string"
+                        },
+                        "Revision": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "Owner": {
+                    "type": "string"
+                },
+                "Size": {
+                    "type": "object",
+                    "properties": {
+                        "X": {
+                            "type": "number"
+                        },
+                        "Y": {
+                            "type": "number"
+                        },
+                        "Tol+": {
+                            "type": "number"
+                        },
+                        "Tol-": {
+                            "type": "number"
+                        }
+                    },
+                    "required": [
+                        "X",
+                        "Y"
+                    ]
+                },
+                "LayerNumber": {
+                    "type": "integer"
+                },
+                "BoardThickness": {
+                    "type": "number"
+                },
+                "IPC-2221-Type": {
+                    "type": "integer",
+                    "enum": [
+                        1,
+                        2,
+                        3,
+                        4,
+                        5,
+                        6
+                    ]
+                },
+                "IPC-600-Class": {
+                    "type": [
+                        "string",
+                        "integer"
+                    ],
+                    "enum": [
+                        1,
+                        2,
+                        3,
+                        "NA"
+                    ]
+                },
+                "Standard": {
+                    "type": "string"
+                },
+                "ImpedanceControlled": {
+                    "type": "boolean"
+                },
+                "UL_Logo": {
+                    "type": "boolean"
+                },
+                "Fabricator_Logo": {
+                    "type": "boolean"
+                },
+                "Fabricator_Datecode": {
+                    "type": "boolean"
+                },
+                "ViaProtection": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "Ia",
+                            "Ib",
+                            "IIa",
+                            "IIb",
+                            "IIIa",
+                            "IIIb",
+                            "IVa",
+                            "IVb",
+                            "V",
+                            "VI",
+                            "VII",
+                            "None"
+                        ]
+                    }
+                },
+                "HolePlatingThickness": {
+                    "type": "number"
+                },
+                "HalogenFree": {
+                    "type": "boolean"
+                },
+                "Press-fit": {
+                    "type": "boolean"
+                },
+                "HeatSinkPaste": {
+                    "type": "boolean"
+                },
+                "EdgePlating": {
+                    "type": "boolean"
+                },
+                "Castellated": {
+                    "type": "boolean"
+                },
+                "EdgeConnector": {
+                    "type": "boolean"
+                },
+                "EdgeConnectorBevelled": {
+                    "type": "boolean"
+                },
+                "HardGoldArea": {
+                    "type": "number"
+                },
+                "RoHS": {
+                    "type": "boolean"
+                },
+                "Finish": {
+                    "type": "string"
+                },
+                "Foil": {
+                    "type": "string"
+                },
+                "Substrates": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "Material_Tg": {
+                    "type": "number"
+                },
+                "ITAR": {
+                    "type": "boolean"
+                },
+                "ElectricalTest": {
+                    "type": "boolean"
+                },
+                "Notes": {
+                    "type": "string",
+                    "pattern": "^([\\s\\S]*)$"
+                }
+            },
+            "additionalProperties": false
+        },
+        "MaterialStackup": {
+            "type": "array",
+            "items": {
+                "type": "object",
+            "properties": {
+                "Type": {
+                    "type": "string"
+                },
+                "Thickness": {
+                    "type": "number"
+                },
+                "Color": {
+                    "type": "string",
+                    "pattern": "^(Clear|Dark-Green|Gray|Orange|Pink|Purple|Red|Yellow|Black|Blue|Green|White|Other,(\\w)+|(R([01]?[0-9][0-9]|2[0-4][0-9]|25[0-5])G([01]?[0-9][0-9]|2[0-4][0-9]|25[0-5])B([01]?[0-9][0-9]|2[0-4][0-9]|25[0-5])))(?=((, ?Gloss|, ?Semi-matte|, ?Matte)?)$)"
+                },
+                "DielectricConstant": {
+                    "type": "number"
+                },
+                "LossTangent": {
+                    "type": "number"
+                },
+                "Conductivity": {
+                    "type": "number"
+                },
+                "Tg": {
+                    "type": "number"
+                },
+                "Material": {
+                    "type": "string"
+                },
+                "Name": {
+                    "type": "string"
+                },
+                "Note": {
+                    "type": "string"
+                },
+                "Substacks": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "minProperties": 1,
+            "required": [
+                "Type"
+            ]
+            },
+            "additionalItems": false
+        },
+        "DesignRules": {
+            "type": "array",
+            "items": {
+                            "type": "object",
+            "properties": {
+                "Layers": {
+                    "type": "string",
+                    "oneOf": [
+                        {
+                            "enum": [
+                                "Inner",
+                                "Outer"
+                            ]
+                        },
+                        {
+                            "pattern": "^L[0-9]+$"
+                        }
+                    ]
+                },
+                "PadToPad": {
+                    "type": "number"
+                },
+                "PadToTrack": {
+                    "type": "number"
+                },
+                "PadToRegion": {
+                    "type": "number"
+                },
+                "TrackToTrack": {
+                    "type": "number"
+                },
+                "TrackToRegion": {
+                    "type": "number"
+                },
+                "RegionToRegion": {
+                    "type": "number"
+                },
+                "MinLineWidth": {
+                    "type": "number"
+                },
+                "MinRing": {
+                    "type": "number"
+                },
+                "MinClearanceToProfile": {
+                    "type": "number"
+                },
+                "Notes": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "Layers"
+            ],
+            "minProperties": 2,
+            "additionalProperties": false
+            },
+            "additionalItems": false
+        },
+        "FilesAttributes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+            "properties": {
+                "FileFunction": {
+                    "type": "string"
+                },
+                "FilePolarity": {
+                    "type": "string",
+                    "enum": [
+                        "Positive",
+                        "Negative"
+                    ]
+                },
+                "Path": {
+                    "type": "string"
+                },
+                "FileFormat": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "Path"
+            ]
+            },
+            "additionalItems": false
+        }
+    },
+    "additionalProperties": false
+}

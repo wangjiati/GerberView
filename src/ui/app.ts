@@ -3,7 +3,7 @@ import { Renderer, DisplayOptions, DEFAULT_DISPLAY_OPTIONS } from '../renderer/r
 import { LayerManager, GerberImage } from '../model/gerber-image';
 import { GerberParser, detectGerberFile, KICAD_LAYER_COLORS } from '../parser/gerber-parser';
 import { ExcellonParser, detectExcellonFile } from '../parser/excellon-parser';
-import { IU_PER_MM, ShapeType } from '../model/enums';
+import { IU_PER_MM, ShapeType, LayerType, LAYER_TYPE_COLORS, LAYER_TYPE_LABELS } from '../model/enums';
 import { Point, pt, GerberItem } from '../model/gerber-item';
 import { ThemeColors, PRESET_THEMES, loadTheme, saveTheme, applyThemeToGridConfig } from './theme';
 import { hitTest, HitResult } from '../tools/hit-test';
@@ -79,6 +79,7 @@ export class App {
   private zoomDisplayEl!: HTMLElement;
   private coordDisplayEl!: HTMLElement;
   private layerPanelEl!: HTMLElement;
+  private layerPanelWidth: number = 250;
   private layerTabBtns: HTMLElement[] = [];
   private layerTabContents: HTMLElement[] = [];
   private activeLayerSelect!: HTMLSelectElement;
@@ -102,6 +103,9 @@ export class App {
   private polarCoords: boolean = false;
 
   private isPanning = false;
+  private zoomAreaActive = false;
+  private zoomAreaStart: { x: number; y: number } | null = null;
+  private zoomAreaEnd: { x: number; y: number } | null = null;
   private lastMousePos = { x: 0, y: 0 };
   private unitMode: UnitMode = 'mm';
   private layerPanelVisible = true;
@@ -137,8 +141,12 @@ export class App {
     this.ctx = this.canvas.getContext('2d')!;
     canvasContainer.appendChild(this.canvas);
     mainArea.appendChild(canvasContainer);
+    const resizer = document.createElement('div');
+    resizer.className = 'layer-panel-resizer';
+    mainArea.appendChild(resizer);
     this.layerPanelEl = this.createLayerPanel();
     mainArea.appendChild(this.layerPanelEl);
+    this.initLayerPanelResize(resizer);
     container.appendChild(mainArea);
     this.statusBarEl = this.createStatusBar();
     container.appendChild(this.statusBarEl);
@@ -170,6 +178,7 @@ export class App {
       ]},
       { label: '图层', items: [
         { label: '按扩展名排序', action: () => this.sortLayers() },
+        { label: '按板结构排序', action: () => { this.layerManager.sortByBoardStructure(); this.updateLayerPanel(); this.updateActiveLayerSelect(); this.requestRender(); } },
         { type: 'separator' as const },
         { label: '显示全部', action: () => this.setAllLayersVisible(true) },
         { label: '隐藏全部', action: () => this.setAllLayersVisible(false) },
@@ -177,6 +186,11 @@ export class App {
       { label: '工具', items: [
         { label: 'DFM 分析...', action: () => this.showDfmReport() },
         { label: '清除测量', action: () => { this.measureMgr.clearAll(); this.requestRender(); } },
+      ]},
+      { label: '帮助', items: [
+        { label: '快捷键参考', action: () => this.showShortcutsDialog() },
+        { type: 'separator' as const },
+        { label: '关于 GerbView', action: () => this.showAboutDialog() },
       ]},
     ];
 
@@ -228,7 +242,7 @@ export class App {
     tb.appendChild(this.tbBtn(ICONS.zoomIn, '放大 (+)', () => { this.viewport.zoom(1.5); this.requestRender(); }));
     tb.appendChild(this.tbBtn(ICONS.zoomOut, '缩小 (-)', () => { this.viewport.zoom(1 / 1.5); this.requestRender(); }));
     tb.appendChild(this.tbBtn(ICONS.zoomFit, '适应窗口 (Home)', () => this.zoomFit()));
-    tb.appendChild(this.tbBtn(ICONS.zoomArea, '缩放到选区', () => {}));
+    tb.appendChild(this.tbBtn(ICONS.zoomArea, '缩放到选区', () => this.zoomToSelection()));
     tb.appendChild(sep());
 
     const lbl = document.createElement('span'); lbl.className = 'tb-label'; lbl.textContent = '活动图层:';
@@ -290,11 +304,11 @@ export class App {
     tb.className = 'left-toolbar';
 
     // 工具按钮（点击可在右侧展开面板）
-    tb.appendChild(this.ltPanelBtn('select', ICONS.select, '选择', true));
-    tb.appendChild(this.ltPanelBtn('measure', ICONS.measure, '测量', false));
+    tb.appendChild(this.ltPanelBtn('select', ICONS.select, '选择工具\n点击选中元素查看属性，双击查看详细信息\n快捷键: Esc', true));
+    tb.appendChild(this.ltPanelBtn('measure', ICONS.measure, '测量工具\n支持距离、角度、半径、面积测量\n快捷键: M', false));
     tb.appendChild(sep(true));
-    tb.appendChild(this.ltPanelBtn('grid', ICONS.grid, '网格 (G)', true));
-    tb.appendChild(this.ltBtn('polar', ICONS.polarCoord, '极坐标', false));
+    tb.appendChild(this.ltPanelBtn('grid', ICONS.grid, '网格显示开关\n点击展开网格间距和样式设置\n快捷键: G', true));
+    tb.appendChild(this.ltBtn('polar', ICONS.polarCoord, '极坐标显示\n在状态栏显示极坐标 (R, θ)', false));
     tb.appendChild(sep(true));
 
     // 单位选择
@@ -312,19 +326,19 @@ export class App {
     }
     tb.appendChild(unitGroup);
     tb.appendChild(sep(true));
-    tb.appendChild(this.ltBtn('fullcursor', ICONS.fullCursor, '全屏十字光标', false));
+    tb.appendChild(this.ltBtn('fullcursor', ICONS.fullCursor, '全屏十字光标\n光标线贯穿整个画布区域', false));
     tb.appendChild(sep(true));
-    tb.appendChild(this.ltBtn('flashSketch', ICONS.flashSketch, '焊盘轮廓模式', true));
-    tb.appendChild(this.ltBtn('lineSketch', ICONS.lineSketch, '线条轮廓模式', true));
-    tb.appendChild(this.ltBtn('polySketch', ICONS.polySketch, '多边形轮廓模式', true));
+    tb.appendChild(this.ltBtn('flashSketch', ICONS.flashSketch, '焊盘轮廓模式\n仅显示焊盘 (Flash) 的外形轮廓', true));
+    tb.appendChild(this.ltBtn('lineSketch', ICONS.lineSketch, '线条轮廓模式\n仅显示线条的中心线和轮廓', true));
+    tb.appendChild(this.ltBtn('polySketch', ICONS.polySketch, '多边形轮廓模式\n仅显示多边形的轮廓边框', true));
     tb.appendChild(sep(true));
-    tb.appendChild(this.ltBtn('negative', ICONS.negativeObj, '显示负极性对象', true));
-    tb.appendChild(this.ltBtn('dcodes', ICONS.dcode, '显示 D 代码', false));
-    tb.appendChild(this.ltBtn('diff', ICONS.diffMode, '差异模式', false));
-    tb.appendChild(this.ltBtn('contrast', ICONS.contrast, '高对比度模式', false));
+    tb.appendChild(this.ltBtn('negative', ICONS.negativeObj, '显示负极性对象\n显示被极性清除 (Clear) 的区域轮廓', true));
+    tb.appendChild(this.ltBtn('dcodes', ICONS.dcode, '显示 D 代码标签\n在每个图元旁标注使用的 D 码编号', false));
+    tb.appendChild(this.ltBtn('diff', ICONS.diffMode, '差异模式 (XOR)\n使用异或混合模式显示层间差异', false));
+    tb.appendChild(this.ltBtn('contrast', ICONS.contrast, '高对比度模式\n增强图层颜色对比度便于区分', false));
     tb.appendChild(sep(true));
-    tb.appendChild(this.ltBtn('layerMgr', ICONS.showLayers, '显示图层面板', true));
-    tb.appendChild(this.ltBtn('mirror', ICONS.mirror, '镜像视图', false));
+    tb.appendChild(this.ltBtn('layerMgr', ICONS.showLayers, '显示/隐藏图层面板\n快捷键: L', true));
+    tb.appendChild(this.ltBtn('mirror', ICONS.mirror, '镜像视图\n水平翻转整个画布内容', false));
 
     // 可展开面板
     const panel = document.createElement('div');
@@ -339,7 +353,8 @@ export class App {
   private ltPanelBtn(key: string, iconHtml: string, title: string, initialActive: boolean): HTMLElement {
     const btn = document.createElement('button');
     btn.className = 'lt-btn' + (initialActive ? ' active' : '');
-    btn.title = title; btn.innerHTML = iconHtml; btn.dataset.key = key;
+    btn.innerHTML = iconHtml; btn.dataset.key = key;
+    this.setupLtTooltip(btn, title);
     btn.addEventListener('click', () => {
       const wasActive = btn.classList.contains('active');
       // 切换面板：点击已展开的按钮则关闭，否则展开
@@ -421,7 +436,7 @@ export class App {
 
   private buildGridPanel(panel: HTMLElement) {
     const gc = this.displayOptions.gridConfig;
-    const fineS = gc?.fineStyle || gc?.style || 'dots';
+    const fineS = gc?.fineStyle || (gc as Record<string, any>)?.style || 'dots';
     const coarseS = gc?.coarseStyle || 'lines';
 
     panel.innerHTML = `<div class="lp-title">网格设置</div>
@@ -485,10 +500,27 @@ export class App {
   private ltBtn(key: string, iconHtml: string, title: string, initialActive: boolean): HTMLElement {
     const btn = document.createElement('button');
     btn.className = 'lt-btn' + (initialActive ? ' active' : '');
-    btn.title = title; btn.innerHTML = iconHtml; btn.dataset.key = key;
+    btn.innerHTML = iconHtml; btn.dataset.key = key;
+    this.setupLtTooltip(btn, title);
     btn.addEventListener('click', () => { btn.classList.toggle('active'); this.onLeftToolbarClick(key, btn.classList.contains('active')); });
     this.leftToolbarBtns.set(key, btn);
     return btn;
+  }
+
+  private setupLtTooltip(btn: HTMLElement, text: string) {
+    let tipEl: HTMLElement | null = null;
+    btn.addEventListener('mouseenter', () => {
+      tipEl = document.createElement('div');
+      tipEl.className = 'lt-tooltip';
+      tipEl.textContent = text;
+      document.body.appendChild(tipEl);
+      const r = btn.getBoundingClientRect();
+      tipEl.style.left = (r.right + 8) + 'px';
+      tipEl.style.top = Math.max(4, r.top + r.height / 2 - tipEl.offsetHeight / 2) + 'px';
+    });
+    btn.addEventListener('mouseleave', () => {
+      if (tipEl) { tipEl.remove(); tipEl = null; }
+    });
   }
 
   private onLeftToolbarClick(key: string, active: boolean) {
@@ -652,6 +684,13 @@ export class App {
     }, { passive: false });
 
     this.canvas.addEventListener('mousedown', (e) => {
+      if (this.zoomAreaActive && e.button === 0) {
+        const rect = this.canvas.getBoundingClientRect();
+        this.zoomAreaStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        this.zoomAreaEnd = null;
+        e.preventDefault();
+        return;
+      }
       if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
         this.isPanning = true;
         this.lastMousePos = { x: e.clientX, y: e.clientY };
@@ -687,6 +726,9 @@ export class App {
       if (this.isPanning) {
         this.viewport.pan(e.clientX - this.lastMousePos.x, e.clientY - this.lastMousePos.y);
         this.lastMousePos = { x: e.clientX, y: e.clientY };
+        this.requestRender();
+      } else if (this.zoomAreaActive && this.zoomAreaStart) {
+        this.zoomAreaEnd = sp;
         this.requestRender();
       } else if (this.fullCursor || this.measureActive) {
         this.requestRender();
@@ -777,8 +819,25 @@ export class App {
       }
     });
 
-    window.addEventListener('mouseup', () => {
+    window.addEventListener('mouseup', (e) => {
       if (this.isPanning) { this.isPanning = false; this.canvas.style.cursor = 'default'; }
+      if (this.zoomAreaActive && this.zoomAreaStart && this.zoomAreaEnd) {
+        const s = this.zoomAreaStart, en = this.zoomAreaEnd;
+        const dx = Math.abs(en.x - s.x), dy = Math.abs(en.y - s.y);
+        if (dx > 5 && dy > 5) {
+          const x1 = Math.min(s.x, en.x), y1 = Math.min(s.y, en.y);
+          const x2 = Math.max(s.x, en.x), y2 = Math.max(s.y, en.y);
+          const w1 = this.viewport.screenToWorld({ x: x1, y: y1 });
+          const w2 = this.viewport.screenToWorld({ x: x2, y: y2 });
+          this.viewport.fitBoundingBox(pt(w1.x, w2.y), pt(w2.x, w1.y), 0.05);
+          this.requestRender();
+        }
+        this.zoomAreaActive = false;
+        this.zoomAreaStart = null;
+        this.zoomAreaEnd = null;
+        this.canvas.style.cursor = 'default';
+        this.requestRender();
+      }
     });
 
     // 右键上下文菜单
@@ -790,7 +849,13 @@ export class App {
     window.addEventListener('keydown', (e) => {
       const key = e.key;
       if (key === 'Escape') {
-        if (this.measureActive) {
+        if (this.zoomAreaActive) {
+          this.zoomAreaActive = false;
+          this.zoomAreaStart = null;
+          this.zoomAreaEnd = null;
+          this.canvas.style.cursor = 'default';
+          this.requestRender();
+        } else if (this.measureActive) {
           if (this.measureInProgress.length > 0) {
             this.measureInProgress = [];
           } else {
@@ -840,73 +905,62 @@ export class App {
 
   // ========== 捕捉引擎 ==========
 
-  // 从单个元素提取捕捉点
-  private getItemSnapPoints(item: GerberItem): SnapResult[] {
+  // 从单个元素提取捕捉点（经过变换后的世界坐标）
+  private getItemSnapPoints(item: GerberItem, layer: GerberImage): SnapResult[] {
+    const tp = (p: Point): Point => transformPointWorld(item, layer, p);
     const pts: SnapResult[] = [];
-    const s = item.start, e = item.end;
+    const s = tp(item.start), e = tp(item.end);
 
     if (item.flashed) {
-      // 闪光焊盘：中心点
       pts.push({ world: s, type: SnapType.Center });
       return pts;
     }
 
     switch (item.shapeType) {
       case ShapeType.Segment:
-        // 线段：两端点 + 中点
         pts.push({ world: s, type: SnapType.Endpoint });
         pts.push({ world: e, type: SnapType.Endpoint });
         pts.push({ world: pt((s.x + e.x) / 2, (s.y + e.y) / 2), type: SnapType.Midpoint });
         break;
 
-      case ShapeType.Arc:
-        // 弧：两端点 + 中心 + 弧线中点
+      case ShapeType.Arc: {
+        const ac = tp(item.arcCenter);
         pts.push({ world: s, type: SnapType.Endpoint });
         pts.push({ world: e, type: SnapType.Endpoint });
-        pts.push({ world: item.arcCenter, type: SnapType.Center });
-        // 弧线中点（角度中点处）
-        {
-          const cx = item.arcCenter.x, cy = item.arcCenter.y;
-          const r = Math.max(Math.abs(item.size.x), Math.abs(item.size.y)) / 2;
-          if (r > 0) {
-            const aStart = Math.atan2(s.y - cy, s.x - cx);
-            const aEnd = Math.atan2(e.y - cy, e.x - cx);
-            let da = aEnd - aStart;
-            if (item.interpolation === 2) { // ArcCCW
-              if (da <= 0) da += Math.PI * 2;
-            } else { // ArcCW
-              if (da >= 0) da -= Math.PI * 2;
-            }
-            const aMid = aStart + da / 2;
-            pts.push({ world: pt(cx + r * Math.cos(aMid), cy + r * Math.sin(aMid)), type: SnapType.Midpoint });
+        pts.push({ world: ac, type: SnapType.Center });
+        const cx = item.arcCenter.x, cy = item.arcCenter.y;
+        const r = Math.max(Math.abs(item.size.x), Math.abs(item.size.y)) / 2;
+        if (r > 0) {
+          const aStart = Math.atan2(item.start.y - cy, item.start.x - cx);
+          const aEnd = Math.atan2(item.end.y - cy, item.end.x - cx);
+          let da = aEnd - aStart;
+          if (item.interpolation === 2) {
+            if (da <= 0) da += Math.PI * 2;
+          } else {
+            if (da >= 0) da -= Math.PI * 2;
           }
+          const aMid = aStart + da / 2;
+          pts.push({ world: tp(pt(cx + r * Math.cos(aMid), cy + r * Math.sin(aMid))), type: SnapType.Midpoint });
         }
         break;
+      }
 
       case ShapeType.Circle:
-        // 圆：中心
-        pts.push({ world: item.arcCenter, type: SnapType.Center });
+        pts.push({ world: tp(item.arcCenter), type: SnapType.Center });
         break;
 
       case ShapeType.Polygon:
-        // 多边形：各顶点 + 各边中点
         if (item.polygonPoints.length > 0) {
           for (let i = 0; i < item.polygonPoints.length; i++) {
-            pts.push({ world: item.polygonPoints[i], type: SnapType.Endpoint });
-            const next = item.polygonPoints[(i + 1) % item.polygonPoints.length];
-            pts.push({
-              world: pt(
-                (item.polygonPoints[i].x + next.x) / 2,
-                (item.polygonPoints[i].y + next.y) / 2,
-              ),
-              type: SnapType.Midpoint,
-            });
+            const tpi = tp(item.polygonPoints[i]);
+            const next = tp(item.polygonPoints[(i + 1) % item.polygonPoints.length]);
+            pts.push({ world: tpi, type: SnapType.Endpoint });
+            pts.push({ world: pt((tpi.x + next.x) / 2, (tpi.y + next.y) / 2), type: SnapType.Midpoint });
           }
         }
         break;
 
       default:
-        // Spot 类型等：中心点
         pts.push({ world: s, type: SnapType.Center });
         break;
     }
@@ -987,7 +1041,7 @@ export class App {
       const layer = this.layerManager.getLayer(li);
       if (!layer || !layer.visible) continue;
       for (const item of layer.items) {
-        const snapPts = this.getItemSnapPoints(item);
+        const snapPts = this.getItemSnapPoints(item, layer);
         for (const sp of snapPts) {
           const dx = sp.world.x - worldPos.x;
           const dy = sp.world.y - worldPos.y;
@@ -1077,6 +1131,23 @@ export class App {
       ctx.restore();
     }
 
+    // 框选缩放矩形
+    if (this.zoomAreaActive && this.zoomAreaStart && this.zoomAreaEnd) {
+      const s = this.zoomAreaStart, en = this.zoomAreaEnd;
+      const rx = Math.min(s.x, en.x), ry = Math.min(s.y, en.y);
+      const rw = Math.abs(en.x - s.x), rh = Math.abs(en.y - s.y);
+      ctx.save();
+      ctx.strokeStyle = 'var(--accent)';
+      ctx.strokeStyle = '#0078d4';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.strokeRect(rx, ry, rw, rh);
+      ctx.fillStyle = '#0078d420';
+      ctx.fillRect(rx, ry, rw, rh);
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+
     // 测量尺 — 使用 measurement 模块渲染持久化测量
     if (this.measureActive) {
       let cursorWorld: Point | null = null;
@@ -1151,7 +1222,8 @@ export class App {
     const fCount = layer.items.filter(i => i.flashed).length;
     const lCount = layer.items.filter(i => !i.flashed).length;
     parts.push(`${layer.items.length} 项 (线${lCount}/焊盘${fCount})`);
-    if (layer.imagePolarity === 'NEG') parts.push('负极性');
+    if (layer.imagePolarity === 'NEG') parts.push('负极性(IP)');
+    if (layer.filePolarity) parts.push(`文件极性: ${layer.filePolarity}`);
     this.fileInfoEl.textContent = parts.join(' | ');
   }
 
@@ -1178,6 +1250,9 @@ export class App {
       await this.loadSingleFile(file);
     }
     this.updateLayerPanel(); this.updateActiveLayerSelect(); this.populateX2Selectors(); this.updateFileInfo(); this.zoomFit();
+    // 加载后按板结构自动排序
+    this.layerManager.sortByBoardStructure();
+    this.updateLayerPanel(); this.updateActiveLayerSelect(); this.requestRender();
   }
 
   private async loadZipFile(file: File) {
@@ -1189,7 +1264,7 @@ export class App {
 
       for (const [path, entry] of Object.entries(zip.files)) {
         if (entry.dir) continue;
-        const ext = '.' + path.split('.').pop().toLowerCase();
+        const ext = '.' + (path.split('.').pop() ?? '').toLowerCase();
         if (!gerberExts.includes(ext) && !drillExts.includes(ext)) continue;
 
         const layerIndex = this.layerManager.getLoadedCount();
@@ -1222,6 +1297,100 @@ export class App {
       image = new GerberParser().parse(text, file.name, layerIndex);
     }
     this.layerManager.addLayer(image);
+    // 自动识别图层类型并着色
+    const lt = this.detectLayerType(file.name, image.fileFunction);
+    image.layerType = lt;
+    if (LAYER_TYPE_COLORS[lt]) {
+      image.color = LAYER_TYPE_COLORS[lt];
+    }
+    if (image.layerName === '' && lt !== LayerType.Unknown) {
+      image.layerName = LAYER_TYPE_LABELS[lt];
+    }
+  }
+
+  private detectLayerType(fileName: string, fileFunction: string): LayerType {
+    // 优先使用 TF.FileFunction 属性
+    if (fileFunction) {
+      const ff = fileFunction.toLowerCase();
+      if (ff.startsWith('copper')) {
+        if (ff.includes(',l1,') || ff.includes(',top')) return LayerType.TopCopper;
+        if (ff.includes(',l2,') && (ff.includes(',bot') || ff.includes('bottom'))) return LayerType.BottomCopper;
+        // 尝试从层号推断
+        const m = ff.match(/,l(\d+),/);
+        if (m) {
+          const n = parseInt(m[1]);
+          if (n === 1) return LayerType.TopCopper;
+          return LayerType.InnerCopper;
+        }
+        if (ff.includes('bot')) return LayerType.BottomCopper;
+        return LayerType.TopCopper;
+      }
+      if (ff.startsWith('soldermask')) {
+        if (ff.includes('bot')) return LayerType.BottomSolderMask;
+        return LayerType.TopSolderMask;
+      }
+      if (ff.startsWith('silkscreen')) {
+        if (ff.includes('bot')) return LayerType.BottomSilkscreen;
+        return LayerType.TopSilkscreen;
+      }
+      if (ff.startsWith('paste')) {
+        if (ff.includes('bot')) return LayerType.BottomPaste;
+        return LayerType.TopPaste;
+      }
+      if (ff.includes('profile') || ff.includes('outline') || ff.includes('edge')) {
+        return LayerType.EdgeCuts;
+      }
+      if (ff.startsWith('drill') || ff.startsWith('plated') || ff.includes('non-plated')) {
+        return LayerType.Drill;
+      }
+    }
+
+    // 回退到文件名模式匹配
+    const name = fileName.toLowerCase();
+    const ext = name.split('.').pop() || '';
+
+    // KiCad 标准扩展名
+    if (ext === 'gtl' || ext === 'cu') return LayerType.TopCopper;
+    if (ext === 'gbl') return LayerType.BottomCopper;
+    if (ext === 'gts') return LayerType.TopSolderMask;
+    if (ext === 'gbs') return LayerType.BottomSolderMask;
+    if (ext === 'gto') return LayerType.TopSilkscreen;
+    if (ext === 'gbo') return LayerType.BottomSilkscreen;
+    if (ext === 'gtp') return LayerType.TopPaste;
+    if (ext === 'gbp') return LayerType.BottomPaste;
+    if (ext === 'gko' || ext === 'gm1' || ext === 'gbr轮廓') return LayerType.EdgeCuts;
+    if (ext === 'xnc' || ext === 'drl' || ext === 'drl') return LayerType.Drill;
+
+    // 文件名关键词
+    if (/(?:^|[-_.])f?cu(?:[-_.]|$)/i.test(name) || /top.*copper|copper.*top/i.test(name)) return LayerType.TopCopper;
+    if (/(?:^|[-_.])b?cu(?:[-_.]|$)/i.test(name) || /bot.*copper|copper.*bot/i.test(name)) return LayerType.BottomCopper;
+    if (/inner|internal|in\d/i.test(name) && /cu/i.test(name)) return LayerType.InnerCopper;
+    if (/(?:^|[-_.])(?:f\.?s(?:m|s)|top.*sold(?:er)?mask|sold(?:er)?mask.*top)/i.test(name)) return LayerType.TopSolderMask;
+    if (/(?:^|[-_.])(?:b\.?s(?:m|s)|bot.*sold(?:er)?mask|sold(?:er)?mask.*bot)/i.test(name)) return LayerType.BottomSolderMask;
+    if (/(?:^|[-_.])(?:f\.?silks|top.*silk|silk.*top)/i.test(name)) return LayerType.TopSilkscreen;
+    if (/(?:^|[-_.])(?:b\.?silks|bot.*silk|silk.*bot)/i.test(name)) return LayerType.BottomSilkscreen;
+    if (/(?:^|[-_.])top.*paste|paste.*top/i.test(name)) return LayerType.TopPaste;
+    if (/(?:^|[-_.])bot.*paste|paste.*bot/i.test(name)) return LayerType.BottomPaste;
+    if (/(?:^|[-_.])(?:edge(?:\.?cut)?|outline|profile|board)/i.test(name)) return LayerType.EdgeCuts;
+    if (/(?:^|[-_.])(?:npth|pth|drill|drl|drills?)/i.test(name)) return LayerType.Drill;
+
+    // 常见 PCB 数据命名模式: PROJECTNAME-LAYERNAME.gbr
+    const parts = name.replace(/\.[^.]+$/, '').split(/[-_]/);
+    for (const p of parts) {
+      if (/^f(?:cu|copper)$/i.test(p)) return LayerType.TopCopper;
+      if (/^b(?:cu|copper)$/i.test(p)) return LayerType.BottomCopper;
+      if (/^(?:in\d+|inner)$/i.test(p)) return LayerType.InnerCopper;
+      if (/^f\.?s(?:m|s)?$/i.test(p)) return LayerType.TopSolderMask;
+      if (/^b\.?s(?:m|s)?$/i.test(p)) return LayerType.BottomSolderMask;
+      if (/^f\.?silks?$/i.test(p)) return LayerType.TopSilkscreen;
+      if (/^b\.?silks?$/i.test(p)) return LayerType.BottomSilkscreen;
+      if (/^f\.?paste$/i.test(p)) return LayerType.TopPaste;
+      if (/^b\.?paste$/i.test(p)) return LayerType.BottomPaste;
+      if (/^(?:edge|outline|profile)$/i.test(p)) return LayerType.EdgeCuts;
+      if (/^(?:npth|pth|drill|drills?)$/i.test(p)) return LayerType.Drill;
+    }
+
+    return LayerType.Unknown;
   }
 
   // ========== 图层面板 ==========
@@ -1234,6 +1403,38 @@ export class App {
 
       const row = document.createElement('div');
       row.className = 'layer-row' + (this.displayOptions.activeLayer === i ? ' active-layer' : '');
+      row.draggable = true;
+      row.dataset.layerIndex = String(i);
+      row.addEventListener('dragstart', (e) => {
+        e.dataTransfer!.setData('text/plain', String(i));
+        row.style.opacity = '0.5';
+      });
+      row.addEventListener('dragend', () => { row.style.opacity = ''; row.classList.remove('drag-over-top', 'drag-over-bottom'); });
+      row.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const rect = row.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        row.classList.remove('drag-over-top', 'drag-over-bottom');
+        if (e.clientY < midY) {
+          row.classList.add('drag-over-top');
+        } else {
+          row.classList.add('drag-over-bottom');
+        }
+      });
+      row.addEventListener('dragleave', () => { row.classList.remove('drag-over-top', 'drag-over-bottom'); });
+      row.addEventListener('drop', (e) => {
+        e.preventDefault();
+        row.classList.remove('drag-over-top', 'drag-over-bottom');
+        const fromIdx = parseInt(e.dataTransfer!.getData('text/plain'));
+        if (isNaN(fromIdx) || fromIdx === i) return;
+        const rect = row.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        const insertBefore = e.clientY < midY;
+        this.moveLayerTo(fromIdx, i, insertBefore);
+        this.updateLayerPanel();
+        this.updateActiveLayerSelect();
+        this.requestRender();
+      });
 
       const arrow = document.createElement('span');
       arrow.className = 'active-arrow' + (this.displayOptions.activeLayer === i ? '' : ' hidden');
@@ -1248,16 +1449,39 @@ export class App {
       swatch.style.backgroundColor = layer.color;
       swatch.addEventListener('click', (e) => {
         e.stopPropagation();
-        const input = document.createElement('input');
-        input.type = 'color'; input.value = layer.color;
-        input.addEventListener('input', () => { layer.color = input.value; swatch.style.backgroundColor = input.value; this.requestRender(); });
-        input.click();
+        this.showLayerColorDialog(layer, swatch);
       });
 
       const name = document.createElement('span');
       name.className = 'layer-name-text';
-      name.textContent = layer.layerName || layer.fileName || `图层 ${i}`;
-      name.title = layer.fileName || '';
+      const displayName = layer.layerName || `图层 ${i}`;
+      const fileName = layer.fileName || '';
+      name.textContent = displayName !== fileName ? `${displayName}(${fileName})` : displayName;
+      name.title = fileName || displayName;
+
+      const typeSelect = document.createElement('select');
+      typeSelect.className = 'layer-type-select';
+      const allTypes = Object.values(LayerType);
+      for (const lt of allTypes) {
+        const opt = document.createElement('option');
+        opt.value = lt;
+        opt.textContent = LAYER_TYPE_LABELS[lt];
+        if (layer.layerType === lt) opt.selected = true;
+        typeSelect.appendChild(opt);
+      }
+      typeSelect.addEventListener('change', () => {
+        const newType = typeSelect.value as LayerType;
+        layer.layerType = newType;
+        if (LAYER_TYPE_COLORS[newType]) {
+          layer.color = LAYER_TYPE_COLORS[newType];
+          swatch.style.backgroundColor = layer.color;
+        }
+        if (newType !== LayerType.Unknown && LAYER_TYPE_LABELS[newType]) {
+          layer.layerName = LAYER_TYPE_LABELS[newType];
+          name.textContent = layer.layerName;
+        }
+        this.requestRender();
+      });
 
       const del = document.createElement('button');
       del.className = 'layer-del'; del.textContent = '✕';
@@ -1301,20 +1525,59 @@ export class App {
       opacityWrap.appendChild(opacitySlider);
       opacityWrap.appendChild(opacityInput);
 
-      row.appendChild(arrow); row.appendChild(cb); row.appendChild(swatch); row.appendChild(name);
+      row.appendChild(arrow); row.appendChild(cb); row.appendChild(swatch); row.appendChild(name); row.appendChild(typeSelect);
       row.appendChild(opacityWrap);
       row.appendChild(del);
       row.addEventListener('click', (e) => {
-        if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'BUTTON') return;
+        if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'BUTTON' || (e.target as HTMLElement).tagName === 'SELECT') return;
         this.displayOptions.activeLayer = i;
         this.activeLayerSelect.value = String(i);
         this.updateLayerPanel(); this.updateFileInfo(); this.requestRender();
       });
+      row.addEventListener('contextmenu', (e) => {
+        e.preventDefault(); e.stopPropagation();
+        this.showLayerContextMenu(e.clientX, e.clientY, i, layer, swatch);
+      });
       row.addEventListener('dblclick', (e) => {
-        e.stopPropagation();
-        this.showLayerTransformDialog(i);
+        e.preventDefault(); e.stopPropagation();
+        this.showLayerContextMenu(
+          row.getBoundingClientRect().right,
+          row.getBoundingClientRect().top,
+          i, layer, swatch
+        );
       });
       this.layerListEl.appendChild(row);
+    }
+  }
+
+  private moveLayerTo(fromIdx: number, toIdx: number, insertBefore: boolean) {
+    // 收集所有已加载图层（保持顺序）
+    const loaded: (GerberImage | null)[] = [];
+    const loadedIndices: number[] = [];
+    for (let k = 0; k < 32; k++) {
+      if (this.layerManager.getLayer(k)) {
+        loaded.push(this.layerManager.getLayer(k));
+        loadedIndices.push(k);
+      }
+    }
+    const fromPos = loadedIndices.indexOf(fromIdx);
+    const toPos = loadedIndices.indexOf(toIdx);
+    if (fromPos === -1 || toPos === -1) return;
+
+    // 取出被拖动的图层
+    const moved = loaded.splice(fromPos, 1)[0]!;
+    // 重新计算目标位置（splice后偏移了）
+    const adjustedTo = fromPos < toPos ? toPos - 1 : toPos;
+    const insertPos = insertBefore ? adjustedTo : adjustedTo + 1;
+    loaded.splice(insertPos, 0, moved);
+
+    // 重建 layers 数组
+    for (let k = 0; k < 32; k++) this.layerManager.layers[k] = null;
+    for (let k = 0; k < loaded.length; k++) {
+      if (loaded[k]) {
+        loaded[k]!.layerIndex = k;
+        this.layerManager.layers[k] = loaded[k];
+      }
     }
   }
 
@@ -1362,6 +1625,13 @@ export class App {
     const bb = this.layerManager.computeTotalBoundingBox();
     if (bb) this.viewport.fitBoundingBox(bb.min, bb.max);
     this.requestRender();
+  }
+
+  private zoomToSelection() {
+    this.zoomAreaActive = true;
+    this.zoomAreaStart = null;
+    this.zoomAreaEnd = null;
+    this.canvas.style.cursor = 'crosshair';
   }
 
   private clearAll() {
@@ -1499,6 +1769,189 @@ export class App {
     document.body.appendChild(overlay);
   }
 
+  private showAboutDialog() {
+    const overlay = document.createElement('div');
+    overlay.className = 'dialog-overlay';
+    const dialog = document.createElement('div');
+    dialog.className = 'dialog';
+    dialog.style.maxWidth = '420px';
+    dialog.innerHTML = `
+      <div class="dialog-title">关于 GerbView</div>
+      <div style="padding:4px 0 12px;font-size:13px;line-height:1.8;color:var(--text-primary);">
+        <div style="font-size:16px;font-weight:bold;margin-bottom:8px;">GerbView Web</div>
+        <div>基于 Web 技术的 Gerber 文件查看器</div>
+        <div style="margin-top:8px;color:var(--text-secondary);font-size:12px;">
+          <div>支持 Gerber RS-274X (X2) 和 Excellon 钻孔文件格式</div>
+          <div>支持多图层叠加、极性合成、XOR 差分模式</div>
+          <div>支持测量、DFM 分析、导出 PNG/SVG/DXF</div>
+          <div>支持宏光圈 (Aperture Macro)、Step-Repeat、层变换</div>
+        </div>
+        <div style="margin-top:12px;color:var(--text-dim);font-size:11px;">
+          从 KiCad GerbView 源码转写的 Web 版本<br>
+          使用 TypeScript + Canvas2D 实现<br>
+          <a href="https://github.com/wangjiati/GerbView" target="_blank" style="color:var(--accent);text-decoration:none;">https://github.com/wangjiati/GerbView</a>
+        </div>
+      </div>
+      <div class="dialog-btn-row">
+        <button class="dialog-btn primary" id="about-close">确定</button>
+      </div>`;
+    overlay.appendChild(dialog);
+    document.querySelector('.gerbview-app')!.appendChild(overlay);
+    overlay.querySelector('#about-close')!.addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+  }
+
+  private showShortcutsDialog() {
+    const overlay = document.createElement('div');
+    overlay.className = 'dialog-overlay';
+    const dialog = document.createElement('div');
+    dialog.className = 'dialog';
+    dialog.style.maxWidth = '400px';
+    const shortcuts = [
+      ['鼠标滚轮', '缩放视图'],
+      ['中键拖拽 / 右键拖拽', '平移画布'],
+      ['F', '适应窗口 (Zoom Fit)'],
+      ['G', '切换网格显示'],
+      ['M', '切换测量工具'],
+      ['Esc', '取消当前操作 / 返回选择工具'],
+      ['L', '显示/隐藏图层面板'],
+      ['Delete', '删除选中图层'],
+      ['Ctrl+O', '打开文件'],
+      ['Ctrl+S', '导出 PNG'],
+      ['+/-', '放大/缩小'],
+      ['方向键', '平移画布'],
+    ];
+    dialog.innerHTML = `
+      <div class="dialog-title">快捷键参考</div>
+      <div style="padding:4px 0 12px;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          ${shortcuts.map(([key, desc]) =>
+            `<tr style="border-bottom:1px solid var(--border-color);">
+              <td style="padding:5px 8px;color:var(--accent);white-space:nowrap;font-family:monospace;">${key}</td>
+              <td style="padding:5px 8px;color:var(--text-primary);">${desc}</td>
+            </tr>`).join('')}
+        </table>
+      </div>
+      <div class="dialog-btn-row">
+        <button class="dialog-btn primary" id="shortcuts-close">关闭</button>
+      </div>`;
+    overlay.appendChild(dialog);
+    document.querySelector('.gerbview-app')!.appendChild(overlay);
+    overlay.querySelector('#shortcuts-close')!.addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+  }
+
+  // ========== 侧边栏拖拽调整宽度 ==========
+  private initLayerPanelResize(resizer: HTMLElement) {
+    let startX = 0;
+    let startWidth = 0;
+    const MIN_W = 150, MAX_W = 500;
+
+    const onMouseMove = (e: MouseEvent) => {
+      const dx = startX - e.clientX;
+      const newW = Math.min(MAX_W, Math.max(MIN_W, startWidth + dx));
+      this.layerPanelWidth = newW;
+      (this.layerPanelEl as HTMLElement).style.width = newW + 'px';
+    };
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      this.resizeCanvas();
+      this.requestRender();
+    };
+    resizer.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      startX = e.clientX;
+      startWidth = this.layerPanelWidth;
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    });
+  }
+
+  // ========== 图层颜色对话框 ==========
+
+  private showLayerColorDialog(layer: GerberImage, swatch: HTMLElement) {
+    const overlay = document.createElement('div');
+    overlay.className = 'dialog-overlay';
+
+    const dialog = document.createElement('div');
+    dialog.className = 'dialog';
+
+    const title = document.createElement('div');
+    title.className = 'dialog-title';
+    title.textContent = `图层颜色 — ${layer.layerName || layer.fileName}`;
+    dialog.appendChild(title);
+
+    const originalColor = layer.color;
+
+    // 颜色选择行
+    const colorRow = document.createElement('div');
+    colorRow.className = 'dialog-row';
+    const colorLabel = document.createElement('label');
+    colorLabel.textContent = '颜色';
+    const colorInput = document.createElement('input');
+    colorInput.type = 'color';
+    colorInput.value = layer.color;
+    colorInput.className = 'dialog-input';
+    colorInput.style.width = '60px';
+    colorInput.style.height = '30px';
+    colorInput.style.padding = '2px';
+    colorInput.style.cursor = 'pointer';
+    // 预览色块
+    const preview = document.createElement('div');
+    preview.style.cssText = `width:60px;height:30px;border-radius:4px;border:1px solid #666;background:${layer.color};margin-left:10px;`;
+    // 十六进制值
+    const hexLabel = document.createElement('span');
+    hexLabel.className = 'dialog-unit';
+    hexLabel.textContent = layer.color.toUpperCase();
+    colorRow.appendChild(colorLabel);
+    colorRow.appendChild(colorInput);
+    colorRow.appendChild(preview);
+    colorRow.appendChild(hexLabel);
+    dialog.appendChild(colorRow);
+
+    colorInput.addEventListener('input', () => {
+      layer.color = colorInput.value;
+      swatch.style.backgroundColor = colorInput.value;
+      preview.style.background = colorInput.value;
+      hexLabel.textContent = colorInput.value.toUpperCase();
+      this.requestRender();
+    });
+
+    const btnRow = document.createElement('div');
+    btnRow.className = 'dialog-btn-row';
+    const applyBtn = document.createElement('button');
+    applyBtn.className = 'dialog-btn primary'; applyBtn.textContent = '确认';
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'dialog-btn'; cancelBtn.textContent = '取消';
+    btnRow.appendChild(applyBtn); btnRow.appendChild(cancelBtn);
+    dialog.appendChild(btnRow);
+
+    overlay.appendChild(dialog);
+    document.querySelector('.gerbview-app')!.appendChild(overlay);
+
+    const close = () => overlay.remove();
+    cancelBtn.addEventListener('click', () => {
+      layer.color = originalColor;
+      swatch.style.backgroundColor = originalColor;
+      this.requestRender();
+      close();
+    });
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        layer.color = originalColor;
+        swatch.style.backgroundColor = originalColor;
+        this.requestRender();
+        close();
+      }
+    });
+    applyBtn.addEventListener('click', close);
+  }
+
   // ========== 图层变换对话框 ==========
 
   private showLayerTransformDialog(layerIdx: number) {
@@ -1593,6 +2046,133 @@ export class App {
       close();
       this.requestRender();
     });
+  }
+
+  private showLayerContextMenu(x: number, y: number, layerIdx: number, layer: GerberImage, swatch: HTMLElement) {
+    document.querySelectorAll('.ctx-menu').forEach(m => m.remove());
+
+    const menu = document.createElement('div');
+    menu.className = 'ctx-menu';
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+
+    const loadedIndices: number[] = [];
+    for (let k = 0; k < 32; k++) { if (this.layerManager.getLayer(k)) loadedIndices.push(k); }
+    const posInList = loadedIndices.indexOf(layerIdx);
+
+    const items: { label: string; action?: () => void; separator?: boolean; checked?: boolean }[] = [
+      { label: '设为活动图层', action: () => {
+        this.displayOptions.activeLayer = layerIdx;
+        this.activeLayerSelect.value = String(layerIdx);
+        this.updateLayerPanel(); this.updateFileInfo(); this.requestRender();
+      }},
+      { separator: true, label: '' },
+      { label: layer.visible ? '隐藏图层' : '显示图层', action: () => {
+        layer.visible = !layer.visible; this.updateLayerPanel(); this.requestRender();
+      }},
+      { label: '更改颜色...', action: () => { (swatch as HTMLElement).click(); }},
+      { label: '图层类型', separator: true },
+    ];
+
+    // 图层类型子菜单项
+    const allTypes = Object.values(LayerType);
+    for (const lt of allTypes) {
+      const currentType = layer.layerType;
+      items.push({
+        label: `  ${LAYER_TYPE_LABELS[lt]}`,
+        action: () => {
+          layer.layerType = lt;
+          if (LAYER_TYPE_COLORS[lt]) {
+            layer.color = LAYER_TYPE_COLORS[lt];
+          }
+          if (lt !== LayerType.Unknown && LAYER_TYPE_LABELS[lt]) {
+            layer.layerName = LAYER_TYPE_LABELS[lt];
+          }
+          this.updateLayerPanel(); this.requestRender();
+        },
+        checked: currentType === lt,
+      });
+    }
+
+    items.push(
+      { separator: true, label: '' },
+      { label: '图层变换...', action: () => { this.showLayerTransformDialog(layerIdx); }},
+      { separator: true, label: '' },
+      { label: '上移', action: () => {
+        if (posInList > 0) {
+          this.layerManager.swapLayers(layerIdx, loadedIndices[posInList - 1]);
+          this.updateLayerPanel(); this.updateActiveLayerSelect(); this.requestRender();
+        }
+      }},
+      { label: '下移', action: () => {
+        if (posInList < loadedIndices.length - 1) {
+          this.layerManager.swapLayers(layerIdx, loadedIndices[posInList + 1]);
+          this.updateLayerPanel(); this.updateActiveLayerSelect(); this.requestRender();
+        }
+      }},
+      { label: '按板结构排序', action: () => {
+        this.layerManager.sortByBoardStructure();
+        this.updateLayerPanel(); this.updateActiveLayerSelect(); this.requestRender();
+      }},
+      { separator: true, label: '' },
+      { label: '删除图层', action: () => {
+        this.layerManager.removeLayer(layerIdx);
+        this.updateLayerPanel(); this.updateActiveLayerSelect(); this.requestRender();
+      }},
+    );
+
+    for (const item of items) {
+      if (item.separator && !item.action) {
+        const sep = document.createElement('div'); sep.className = 'ctx-sep';
+        menu.appendChild(sep);
+      } else {
+        const el = document.createElement('div');
+        el.className = 'ctx-item' + (item.checked ? ' checked' : '');
+        el.textContent = item.label;
+        if (item.action) {
+          el.addEventListener('click', () => { menu.remove(); item.action!(); });
+        }
+        menu.appendChild(el);
+      }
+    }
+
+    document.body.appendChild(menu);
+
+    const rect = menu.getBoundingClientRect();
+    if (rect.right > window.innerWidth) menu.style.left = (x - rect.width) + 'px';
+    if (rect.bottom > window.innerHeight) menu.style.top = (y - rect.height) + 'px';
+
+    const closeHandler = (e: MouseEvent) => {
+      if (!menu.contains(e.target as Node)) { menu.remove(); document.removeEventListener('mousedown', closeHandler); }
+    };
+    setTimeout(() => document.addEventListener('mousedown', closeHandler), 0);
+  }
+
+  // ========== 测试 API (供 Playwright 调用) ==========
+
+  async loadGerberText(text: string, fileName: string) {
+    const layerIndex = this.layerManager.getLoadedCount();
+    if (layerIndex >= 32) return;
+    let image: GerberImage;
+    if (detectExcellonFile(text)) {
+      image = new ExcellonParser().parse(text, fileName, layerIndex);
+    } else {
+      image = new GerberParser().parse(text, fileName, layerIndex);
+    }
+    this.layerManager.addLayer(image);
+    this.updateLayerPanel();
+    this.updateActiveLayerSelect();
+    this.populateX2Selectors();
+    this.updateFileInfo();
+    this.zoomFit();
+  }
+
+  clearAllLayers() {
+    this.clearAll();
+  }
+
+  getCanvasDataURL(): string {
+    return this.canvas.toDataURL('image/png');
   }
 }
 

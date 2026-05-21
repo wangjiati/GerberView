@@ -1,0 +1,28 @@
+M48
+; #@! TF.GenerationSoftware,LibrePCB,LibrePCB,0.2.0-unstable
+; #@! TF.CreationDate,2021-04-04T14:10:42
+; #@! TF.ProjectId,Hydro Battery Charger,71762d7e-e7f1-403c-8020-db9670c01e9b,v4
+; #@! TF.Part,Single
+; #@! TF.SameCoordinates
+; #@! TF.FileFunction,NonPlated,1,4,NPTH
+FMAT,2
+METRIC,TZ
+; #@! TA.AperFunction,MechanicalDrill
+T1C3.2
+; #@! TA.AperFunction,MechanicalDrill
+T2C4.0
+%
+G90
+G05
+M71
+T1
+X85.5Y70.0
+X85.5Y30.0
+T2
+X19.685Y62.23
+X74.5Y30.0
+X4.5Y30.0
+X74.5Y70.0
+X4.5Y70.0
+T0
+M30

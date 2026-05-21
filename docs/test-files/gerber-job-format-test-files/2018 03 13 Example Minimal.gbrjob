@@ -1,0 +1,20 @@
+{
+  "Header": {
+    "GenerationSoftware": { 
+      "Vendor":      "Ucamco",
+      "Application": "UcamX",
+      "Version":     "2017.12"
+    },
+    "CreationDate":  "2018-01-20T15:59:51+01:00",
+    "Comment": "Example"
+  },
+  "GeneralSpecs": {
+    "Part": "Single",
+    "Size": {
+      "X": 160.0,
+      "Y":  50.8
+    },
+    "LayerNumber":    4,
+    "BoardThickness": 1.6
+  }
+}

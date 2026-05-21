@@ -1,0 +1,5139 @@
+{
+  "total": 109,
+  "pass": 109,
+  "review": 0,
+  "fail": 0,
+  "error": 0,
+  "results": [
+    {
+      "name": "2019_10_11_Component_layer_from_spec",
+      "kicad_file": "2019_10_11_Component_layer_from_spec.png",
+      "web_file": "2019_10_11_Component_layer_from_spec.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.163,
+      "web_content_pct": 0.166,
+      "iou": 0.9994,
+      "kicad_blobs": 3,
+      "web_blobs": 3,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        280400,
+        18789,
+        17112
+      ],
+      "web_blob_top5": [
+        285196,
+        18598,
+        17112
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.5,
+        0.485
+      ],
+      "centroid_w": [
+        0.5,
+        0.485
+      ],
+      "centroid_dist": 0.0,
+      "coarse_sim": 0.997,
+      "coarse_iou": 1.0,
+      "score": 0.997,
+      "diff_image": "diff_2019_10_11_Component_layer_from_spec.png",
+      "side_by_side": "sbs_2019_10_11_Component_layer_from_spec.png",
+      "status": "PASS"
+    },
+    {
+      "name": "2021_03_28_KiCad_XNC_NPTH_attributes",
+      "kicad_file": "2021_03_28_KiCad_XNC_NPTH_attributes.png",
+      "web_file": "2021_03_28_KiCad_XNC_NPTH_attributes.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.908,
+      "web_content_pct": 0.909,
+      "iou": 0.9998,
+      "kicad_blobs": 1,
+      "web_blobs": 1,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        3233285
+      ],
+      "web_blob_top5": [
+        3728505
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.5,
+        0.5
+      ],
+      "centroid_w": [
+        0.5,
+        0.5
+      ],
+      "centroid_dist": 0.0,
+      "coarse_sim": 1.0,
+      "coarse_iou": 1.0,
+      "score": 1.0,
+      "diff_image": "diff_2021_03_28_KiCad_XNC_NPTH_attributes.png",
+      "side_by_side": "sbs_2021_03_28_KiCad_XNC_NPTH_attributes.png",
+      "status": "PASS"
+    },
+    {
+      "name": "2021_03_28_KiCad_XNC_PTH_attributes",
+      "kicad_file": "2021_03_28_KiCad_XNC_PTH_attributes.png",
+      "web_file": "2021_03_28_KiCad_XNC_PTH_attributes.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.024,
+      "web_content_pct": 0.025,
+      "iou": 0.7758,
+      "kicad_blobs": 526,
+      "web_blobs": 526,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        3085,
+        3085,
+        3085,
+        3085,
+        3085
+      ],
+      "web_blob_top5": [
+        3489,
+        3487,
+        3486,
+        3486,
+        3485
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.508,
+        0.475
+      ],
+      "centroid_w": [
+        0.508,
+        0.475
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 0.999,
+      "coarse_iou": 1.0,
+      "score": 0.984,
+      "diff_image": "diff_2021_03_28_KiCad_XNC_PTH_attributes.png",
+      "side_by_side": "sbs_2021_03_28_KiCad_XNC_PTH_attributes.png",
+      "status": "PASS"
+    },
+    {
+      "name": "2021_03_31_KiCad_XNC_buried_attributes_pic_programmer-in2-back",
+      "kicad_file": "2021_03_31_KiCad_XNC_buried_attributes_pic_programmer-in2-back.png",
+      "web_file": "2021_03_31_KiCad_XNC_buried_attributes_pic_programmer-in2-back.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.013,
+      "web_content_pct": 0.013,
+      "iou": 0.9893,
+      "kicad_blobs": 2,
+      "web_blobs": 2,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        21813,
+        21813
+      ],
+      "web_blob_top5": [
+        29509,
+        29508
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.5,
+        0.5
+      ],
+      "centroid_w": [
+        0.5,
+        0.5
+      ],
+      "centroid_dist": 0.0,
+      "coarse_sim": 1.0,
+      "coarse_iou": 1.0,
+      "score": 0.987,
+      "diff_image": "diff_2021_03_31_KiCad_XNC_buried_attributes_pic_programmer-in2-back.png",
+      "side_by_side": "sbs_2021_03_31_KiCad_XNC_buried_attributes_pic_programmer-in2-back.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Hydro_Battery_Charger_COPPER-BOTTOM",
+      "kicad_file": "Hydro_Battery_Charger_COPPER-BOTTOM.png",
+      "web_file": "Hydro_Battery_Charger_COPPER-BOTTOM.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.781,
+      "web_content_pct": 0.8,
+      "iou": 0.9369,
+      "kicad_blobs": 130,
+      "web_blobs": 127,
+      "blob_count_diff": 3,
+      "kicad_blob_top5": [
+        2466278,
+        168049,
+        143503,
+        31350,
+        25001
+      ],
+      "web_blob_top5": [
+        2412060,
+        163278,
+        139998,
+        30730,
+        24635
+      ],
+      "area_hist_diff": 0.023,
+      "centroid_k": [
+        0.526,
+        0.507
+      ],
+      "centroid_w": [
+        0.52,
+        0.509
+      ],
+      "centroid_dist": 0.007,
+      "coarse_sim": 0.952,
+      "coarse_iou": 0.95,
+      "score": 0.961,
+      "diff_image": "diff_Hydro_Battery_Charger_COPPER-BOTTOM.png",
+      "side_by_side": "sbs_Hydro_Battery_Charger_COPPER-BOTTOM.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Hydro_Battery_Charger_COPPER-TOP",
+      "kicad_file": "Hydro_Battery_Charger_COPPER-TOP.png",
+      "web_file": "Hydro_Battery_Charger_COPPER-TOP.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.779,
+      "web_content_pct": 0.798,
+      "iou": 0.9407,
+      "kicad_blobs": 80,
+      "web_blobs": 77,
+      "blob_count_diff": 3,
+      "kicad_blob_top5": [
+        2440687,
+        168020,
+        140555,
+        48863,
+        39454
+      ],
+      "web_blob_top5": [
+        2396890,
+        163250,
+        136870,
+        48612,
+        38121
+      ],
+      "area_hist_diff": 0.037,
+      "centroid_k": [
+        0.526,
+        0.503
+      ],
+      "centroid_w": [
+        0.52,
+        0.506
+      ],
+      "centroid_dist": 0.007,
+      "coarse_sim": 0.952,
+      "coarse_iou": 0.952,
+      "score": 0.963,
+      "diff_image": "diff_Hydro_Battery_Charger_COPPER-TOP.png",
+      "side_by_side": "sbs_Hydro_Battery_Charger_COPPER-TOP.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Hydro_Battery_Charger_DRILLS-NPTH",
+      "kicad_file": "Hydro_Battery_Charger_DRILLS-NPTH.png",
+      "web_file": "Hydro_Battery_Charger_DRILLS-NPTH.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.021,
+      "web_content_pct": 0.021,
+      "iou": 0.9866,
+      "kicad_blobs": 7,
+      "web_blobs": 7,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        16881,
+        16881,
+        16881,
+        16881,
+        16881
+      ],
+      "web_blob_top5": [
+        19119,
+        19107,
+        19102,
+        19095,
+        19085
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.51,
+        0.456
+      ],
+      "centroid_w": [
+        0.511,
+        0.456
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 1.0,
+      "coarse_iou": 1.0,
+      "score": 0.992,
+      "diff_image": "diff_Hydro_Battery_Charger_DRILLS-NPTH.png",
+      "side_by_side": "sbs_Hydro_Battery_Charger_DRILLS-NPTH.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Hydro_Battery_Charger_DRILLS-PTH",
+      "kicad_file": "Hydro_Battery_Charger_DRILLS-PTH.png",
+      "web_file": "Hydro_Battery_Charger_DRILLS-PTH.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.016,
+      "web_content_pct": 0.015,
+      "iou": 0.8474,
+      "kicad_blobs": 378,
+      "web_blobs": 378,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        1185,
+        1185,
+        1185,
+        1185,
+        1185
+      ],
+      "web_blob_top5": [
+        1231,
+        1226,
+        1224,
+        1224,
+        1223
+      ],
+      "area_hist_diff": 0.079,
+      "centroid_k": [
+        0.416,
+        0.48
+      ],
+      "centroid_w": [
+        0.42,
+        0.482
+      ],
+      "centroid_dist": 0.004,
+      "coarse_sim": 0.999,
+      "coarse_iou": 1.0,
+      "score": 0.956,
+      "diff_image": "diff_Hydro_Battery_Charger_DRILLS-PTH.png",
+      "side_by_side": "sbs_Hydro_Battery_Charger_DRILLS-PTH.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Hydro_Battery_Charger_OUTLINES",
+      "kicad_file": "Hydro_Battery_Charger_OUTLINES.png",
+      "web_file": "Hydro_Battery_Charger_OUTLINES.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.002,
+      "web_content_pct": 0.004,
+      "iou": 0.0006,
+      "kicad_blobs": 1,
+      "web_blobs": 1,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        8085
+      ],
+      "web_blob_top5": [
+        15837
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.509,
+        0.502
+      ],
+      "centroid_w": [
+        0.504,
+        0.503
+      ],
+      "centroid_dist": 0.005,
+      "coarse_sim": 0.998,
+      "coarse_iou": 1.0,
+      "score": 0.799,
+      "diff_image": "diff_Hydro_Battery_Charger_OUTLINES.png",
+      "side_by_side": "sbs_Hydro_Battery_Charger_OUTLINES.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Hydro_Battery_Charger_PnP-BOT",
+      "kicad_file": "Hydro_Battery_Charger_PnP-BOT.png",
+      "web_file": "Hydro_Battery_Charger_PnP-BOT.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.019,
+      "web_content_pct": 0.016,
+      "iou": 0.0748,
+      "kicad_blobs": 203,
+      "web_blobs": 206,
+      "blob_count_diff": 3,
+      "kicad_blob_top5": [
+        20139,
+        9754,
+        3677,
+        3163,
+        2666
+      ],
+      "web_blob_top5": [
+        23849,
+        6848,
+        2497,
+        2140,
+        1946
+      ],
+      "area_hist_diff": 0.083,
+      "centroid_k": [
+        0.376,
+        0.487
+      ],
+      "centroid_w": [
+        0.395,
+        0.498
+      ],
+      "centroid_dist": 0.022,
+      "coarse_sim": 0.992,
+      "coarse_iou": 0.0,
+      "score": 0.347,
+      "diff_image": "diff_Hydro_Battery_Charger_PnP-BOT.png",
+      "side_by_side": "sbs_Hydro_Battery_Charger_PnP-BOT.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Hydro_Battery_Charger_PnP-TOP",
+      "kicad_file": "Hydro_Battery_Charger_PnP-TOP.png",
+      "web_file": "Hydro_Battery_Charger_PnP-TOP.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.009,
+      "web_content_pct": 0.009,
+      "iou": 0.0138,
+      "kicad_blobs": 17,
+      "web_blobs": 20,
+      "blob_count_diff": 3,
+      "kicad_blob_top5": [
+        13160,
+        8756,
+        8085,
+        1238,
+        1238
+      ],
+      "web_blob_top5": [
+        15842,
+        8748,
+        5828,
+        828,
+        820
+      ],
+      "area_hist_diff": 0.35,
+      "centroid_k": [
+        0.439,
+        0.493
+      ],
+      "centroid_w": [
+        0.455,
+        0.501
+      ],
+      "centroid_dist": 0.019,
+      "coarse_sim": 0.995,
+      "coarse_iou": 1.0,
+      "score": 0.798,
+      "diff_image": "diff_Hydro_Battery_Charger_PnP-TOP.png",
+      "side_by_side": "sbs_Hydro_Battery_Charger_PnP-TOP.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Hydro_Battery_Charger_SILKSCREEN-BOTTOM",
+      "kicad_file": "Hydro_Battery_Charger_SILKSCREEN-BOTTOM.png",
+      "web_file": "Hydro_Battery_Charger_SILKSCREEN-BOTTOM.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.109,
+      "web_content_pct": 0.117,
+      "iou": 0.3796,
+      "kicad_blobs": 433,
+      "web_blobs": 435,
+      "blob_count_diff": 2,
+      "kicad_blob_top5": [
+        62863,
+        62638,
+        62487,
+        62456,
+        14539
+      ],
+      "web_blob_top5": [
+        134277,
+        133872,
+        10292,
+        10089,
+        6624
+      ],
+      "area_hist_diff": 0.032,
+      "centroid_k": [
+        0.434,
+        0.453
+      ],
+      "centroid_w": [
+        0.438,
+        0.483
+      ],
+      "centroid_dist": 0.03,
+      "coarse_sim": 0.918,
+      "coarse_iou": 0.456,
+      "score": 0.706,
+      "diff_image": "diff_Hydro_Battery_Charger_SILKSCREEN-BOTTOM.png",
+      "side_by_side": "sbs_Hydro_Battery_Charger_SILKSCREEN-BOTTOM.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Hydro_Battery_Charger_SILKSCREEN-TOP",
+      "kicad_file": "Hydro_Battery_Charger_SILKSCREEN-TOP.png",
+      "web_file": "Hydro_Battery_Charger_SILKSCREEN-TOP.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.019,
+      "web_content_pct": 0.021,
+      "iou": 0.2092,
+      "kicad_blobs": 136,
+      "web_blobs": 135,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        29556,
+        3517,
+        645,
+        543,
+        543
+      ],
+      "web_blob_top5": [
+        35508,
+        3559,
+        604,
+        590,
+        564
+      ],
+      "area_hist_diff": 0.007,
+      "centroid_k": [
+        0.547,
+        0.429
+      ],
+      "centroid_w": [
+        0.51,
+        0.451
+      ],
+      "centroid_dist": 0.042,
+      "coarse_sim": 0.988,
+      "coarse_iou": 0.4,
+      "score": 0.679,
+      "diff_image": "diff_Hydro_Battery_Charger_SILKSCREEN-TOP.png",
+      "side_by_side": "sbs_Hydro_Battery_Charger_SILKSCREEN-TOP.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Hydro_Battery_Charger_SOLDERMASK-BOTTOM",
+      "kicad_file": "Hydro_Battery_Charger_SOLDERMASK-BOTTOM.png",
+      "web_file": "Hydro_Battery_Charger_SOLDERMASK-BOTTOM.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.168,
+      "web_content_pct": 0.173,
+      "iou": 0.7392,
+      "kicad_blobs": 299,
+      "web_blobs": 293,
+      "blob_count_diff": 6,
+      "kicad_blob_top5": [
+        153979,
+        153864,
+        7443,
+        7442,
+        5824
+      ],
+      "web_blob_top5": [
+        152424,
+        150855,
+        7338,
+        7336,
+        5798
+      ],
+      "area_hist_diff": 0.02,
+      "centroid_k": [
+        0.442,
+        0.48
+      ],
+      "centroid_w": [
+        0.436,
+        0.483
+      ],
+      "centroid_dist": 0.006,
+      "coarse_sim": 0.945,
+      "coarse_iou": 0.819,
+      "score": 0.858,
+      "diff_image": "diff_Hydro_Battery_Charger_SOLDERMASK-BOTTOM.png",
+      "side_by_side": "sbs_Hydro_Battery_Charger_SOLDERMASK-BOTTOM.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Hydro_Battery_Charger_SOLDERMASK-TOP",
+      "kicad_file": "Hydro_Battery_Charger_SOLDERMASK-TOP.png",
+      "web_file": "Hydro_Battery_Charger_SOLDERMASK-TOP.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.139,
+      "web_content_pct": 0.143,
+      "iou": 0.7465,
+      "kicad_blobs": 127,
+      "web_blobs": 127,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        153979,
+        153864,
+        4373,
+        4373,
+        4373
+      ],
+      "web_blob_top5": [
+        152424,
+        150855,
+        4366,
+        4365,
+        4363
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.473,
+        0.474
+      ],
+      "centroid_w": [
+        0.468,
+        0.478
+      ],
+      "centroid_dist": 0.007,
+      "coarse_sim": 0.953,
+      "coarse_iou": 0.813,
+      "score": 0.858,
+      "diff_image": "diff_Hydro_Battery_Charger_SOLDERMASK-TOP.png",
+      "side_by_side": "sbs_Hydro_Battery_Charger_SOLDERMASK-TOP.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Hydro_Battery_Charger_SOLDERPASTE-BOTTOM",
+      "kicad_file": "Hydro_Battery_Charger_SOLDERPASTE-BOTTOM.png",
+      "web_file": "Hydro_Battery_Charger_SOLDERPASTE-BOTTOM.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.024,
+      "web_content_pct": 0.024,
+      "iou": 0.9188,
+      "kicad_blobs": 178,
+      "web_blobs": 178,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        8550,
+        8436,
+        6510,
+        6510,
+        2961
+      ],
+      "web_blob_top5": [
+        8436,
+        8436,
+        6510,
+        6510,
+        2961
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.285,
+        0.643
+      ],
+      "centroid_w": [
+        0.284,
+        0.643
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 1.0,
+      "coarse_iou": 0.947,
+      "score": 0.972,
+      "diff_image": "diff_Hydro_Battery_Charger_SOLDERPASTE-BOTTOM.png",
+      "side_by_side": "sbs_Hydro_Battery_Charger_SOLDERPASTE-BOTTOM.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Hydro_Battery_Charger_SOLDERPASTE-TOP",
+      "kicad_file": "Hydro_Battery_Charger_SOLDERPASTE-TOP.png",
+      "web_file": "Hydro_Battery_Charger_SOLDERPASTE-TOP.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.0196,
+      "web_content_pct": 0.0,
+      "iou": 1.0,
+      "kicad_blobs": 0,
+      "web_blobs": 0,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [],
+      "web_blob_blob_top5": [],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.5,
+        0.5
+      ],
+      "centroid_w": [
+        0.5,
+        0.5
+      ],
+      "centroid_dist": 0.0,
+      "score": 1.0,
+      "diff_image": "",
+      "side_by_side": "",
+      "status": "PASS",
+      "note": "empty_file"
+    },
+    {
+      "name": "NonPlated",
+      "kicad_file": "NonPlated.png",
+      "web_file": "NonPlated.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.004,
+      "web_content_pct": 0.004,
+      "iou": 0.4507,
+      "kicad_blobs": 3,
+      "web_blobs": 3,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        3909,
+        3909,
+        3909
+      ],
+      "web_blob_top5": [
+        3887,
+        3886,
+        3885
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.355,
+        0.648
+      ],
+      "centroid_w": [
+        0.341,
+        0.659
+      ],
+      "centroid_dist": 0.019,
+      "coarse_sim": 0.995,
+      "coarse_iou": 0.2,
+      "score": 0.623,
+      "diff_image": "diff_NonPlated.png",
+      "side_by_side": "sbs_NonPlated.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL1",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL1.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL1.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.24,
+      "web_content_pct": 0.225,
+      "iou": 0.2662,
+      "kicad_blobs": 679,
+      "web_blobs": 671,
+      "blob_count_diff": 8,
+      "kicad_blob_top5": [
+        12652,
+        12644,
+        12643,
+        4417,
+        4394
+      ],
+      "web_blob_top5": [
+        12620,
+        12617,
+        12616,
+        6229,
+        4932
+      ],
+      "area_hist_diff": 0.109,
+      "centroid_k": [
+        0.529,
+        0.495
+      ],
+      "centroid_w": [
+        0.515,
+        0.509
+      ],
+      "centroid_dist": 0.02,
+      "coarse_sim": 0.926,
+      "coarse_iou": 0.594,
+      "score": 0.731,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL1.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL1.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL2",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL2.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL2.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.874,
+      "web_content_pct": 0.98,
+      "iou": 0.8906,
+      "kicad_blobs": 2,
+      "web_blobs": 1,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        2857296,
+        159
+      ],
+      "web_blob_top5": [
+        3084041
+      ],
+      "area_hist_diff": 0.5,
+      "centroid_k": [
+        0.508,
+        0.49
+      ],
+      "centroid_w": [
+        0.496,
+        0.503
+      ],
+      "centroid_dist": 0.017,
+      "coarse_sim": 0.886,
+      "coarse_iou": 0.938,
+      "score": 0.919,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL2.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL2.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL3",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL3.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL3.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.873,
+      "web_content_pct": 0.98,
+      "iou": 0.8903,
+      "kicad_blobs": 2,
+      "web_blobs": 1,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        2856301,
+        159
+      ],
+      "web_blob_top5": [
+        3084041
+      ],
+      "area_hist_diff": 0.5,
+      "centroid_k": [
+        0.508,
+        0.49
+      ],
+      "centroid_w": [
+        0.496,
+        0.503
+      ],
+      "centroid_dist": 0.017,
+      "coarse_sim": 0.885,
+      "coarse_iou": 0.938,
+      "score": 0.919,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL3.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL3.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL4",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL4.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL4.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.106,
+      "web_content_pct": 0.115,
+      "iou": 0.6212,
+      "kicad_blobs": 376,
+      "web_blobs": 365,
+      "blob_count_diff": 11,
+      "kicad_blob_top5": [
+        12652,
+        12647,
+        12644,
+        6325,
+        5978
+      ],
+      "web_blob_top5": [
+        12620,
+        12617,
+        12616,
+        7581,
+        7526
+      ],
+      "area_hist_diff": 0.125,
+      "centroid_k": [
+        0.304,
+        0.49
+      ],
+      "centroid_w": [
+        0.42,
+        0.495
+      ],
+      "centroid_dist": 0.116,
+      "coarse_sim": 0.889,
+      "coarse_iou": 0.104,
+      "score": 0.511,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL4.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_1_CopperSL4.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_1_LegendSBot",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_1_LegendSBot.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_1_LegendSBot.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.051,
+      "web_content_pct": 0.04,
+      "iou": 0.491,
+      "kicad_blobs": 3,
+      "web_blobs": 3,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        19346,
+        272,
+        268
+      ],
+      "web_blob_top5": [
+        15472,
+        208,
+        208
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.499,
+        0.5
+      ],
+      "centroid_w": [
+        0.499,
+        0.5
+      ],
+      "centroid_dist": 0.0,
+      "coarse_sim": 0.989,
+      "coarse_iou": 0.992,
+      "score": 0.992,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_1_LegendSBot.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_1_LegendSBot.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_1_LegendSTop",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_1_LegendSTop.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_1_LegendSTop.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.04,
+      "web_content_pct": 0.052,
+      "iou": 0.0997,
+      "kicad_blobs": 304,
+      "web_blobs": 293,
+      "blob_count_diff": 11,
+      "kicad_blob_top5": [
+        21012,
+        4760,
+        3543,
+        2875,
+        2855
+      ],
+      "web_blob_top5": [
+        27216,
+        10744,
+        6270,
+        4674,
+        3500
+      ],
+      "area_hist_diff": 0.043,
+      "centroid_k": [
+        0.487,
+        0.528
+      ],
+      "centroid_w": [
+        0.476,
+        0.535
+      ],
+      "centroid_dist": 0.014,
+      "coarse_sim": 0.976,
+      "coarse_iou": 0.0,
+      "score": 0.486,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_1_LegendSTop.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_1_LegendSTop.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_1_NonPlatedS1S4SNPTHSDrill",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_1_NonPlatedS1S4SNPTHSDrill.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_1_NonPlatedS1S4SNPTHSDrill.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.004,
+      "web_content_pct": 0.004,
+      "iou": 0.4507,
+      "kicad_blobs": 3,
+      "web_blobs": 3,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        3909,
+        3909,
+        3909
+      ],
+      "web_blob_top5": [
+        3887,
+        3886,
+        3885
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.355,
+        0.648
+      ],
+      "centroid_w": [
+        0.341,
+        0.659
+      ],
+      "centroid_dist": 0.019,
+      "coarse_sim": 0.995,
+      "coarse_iou": 0.2,
+      "score": 0.623,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_1_NonPlatedS1S4SNPTHSDrill.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_1_NonPlatedS1S4SNPTHSDrill.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_1_NonPlatedS1S4SNPTHSRoute",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_1_NonPlatedS1S4SNPTHSRoute.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_1_NonPlatedS1S4SNPTHSRoute.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.072,
+      "web_content_pct": 0.076,
+      "iou": 0.5885,
+      "kicad_blobs": 1,
+      "web_blobs": 1,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        237323
+      ],
+      "web_blob_top5": [
+        242510
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.499,
+        0.501
+      ],
+      "centroid_w": [
+        0.491,
+        0.508
+      ],
+      "centroid_dist": 0.01,
+      "coarse_sim": 0.977,
+      "coarse_iou": 0.96,
+      "score": 0.88,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_1_NonPlatedS1S4SNPTHSRoute.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_1_NonPlatedS1S4SNPTHSRoute.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_1_PlatedS1S4SPTHSDrill",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_1_PlatedS1S4SPTHSDrill.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_1_PlatedS1S4SPTHSDrill.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.012,
+      "web_content_pct": 0.012,
+      "iou": 0.1856,
+      "kicad_blobs": 707,
+      "web_blobs": 706,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        221,
+        221,
+        221,
+        221,
+        221
+      ],
+      "web_blob_top5": [
+        198,
+        198,
+        198,
+        198,
+        197
+      ],
+      "area_hist_diff": 1.504,
+      "centroid_k": [
+        0.713,
+        0.461
+      ],
+      "centroid_w": [
+        0.692,
+        0.469
+      ],
+      "centroid_dist": 0.022,
+      "coarse_sim": 0.993,
+      "coarse_iou": 1.0,
+      "score": 0.798,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_1_PlatedS1S4SPTHSDrill.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_1_PlatedS1S4SPTHSDrill.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_1_ProfileSNP",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_1_ProfileSNP.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_1_ProfileSNP.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.002,
+      "web_content_pct": 0.004,
+      "iou": 0.0005,
+      "kicad_blobs": 2,
+      "web_blobs": 1,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        7427,
+        155
+      ],
+      "web_blob_top5": [
+        14043
+      ],
+      "area_hist_diff": 0.5,
+      "centroid_k": [
+        0.51,
+        0.491
+      ],
+      "centroid_w": [
+        0.491,
+        0.509
+      ],
+      "centroid_dist": 0.026,
+      "coarse_sim": 0.998,
+      "coarse_iou": 1.0,
+      "score": 0.799,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_1_ProfileSNP.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_1_ProfileSNP.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_1_SoldermaskSBot",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_1_SoldermaskSBot.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_1_SoldermaskSBot.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.046,
+      "web_content_pct": 0.051,
+      "iou": 0.1579,
+      "kicad_blobs": 706,
+      "web_blobs": 705,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        784,
+        784,
+        784,
+        702,
+        649
+      ],
+      "web_blob_top5": [
+        756,
+        756,
+        756,
+        676,
+        614
+      ],
+      "area_hist_diff": 0.044,
+      "centroid_k": [
+        0.641,
+        0.471
+      ],
+      "centroid_w": [
+        0.604,
+        0.483
+      ],
+      "centroid_dist": 0.039,
+      "coarse_sim": 0.968,
+      "coarse_iou": 0.933,
+      "score": 0.861,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_1_SoldermaskSBot.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_1_SoldermaskSBot.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_1_SoldermaskSTop",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_1_SoldermaskSTop.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_1_SoldermaskSTop.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.148,
+      "web_content_pct": 0.162,
+      "iou": 0.3002,
+      "kicad_blobs": 1559,
+      "web_blobs": 1544,
+      "blob_count_diff": 15,
+      "kicad_blob_top5": [
+        3431,
+        3431,
+        1365,
+        1365,
+        1330
+      ],
+      "web_blob_top5": [
+        3478,
+        3431,
+        1402,
+        1402,
+        1368
+      ],
+      "area_hist_diff": 0.153,
+      "centroid_k": [
+        0.555,
+        0.504
+      ],
+      "centroid_w": [
+        0.531,
+        0.514
+      ],
+      "centroid_dist": 0.026,
+      "coarse_sim": 0.908,
+      "coarse_iou": 0.41,
+      "score": 0.661,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_1_SoldermaskSTop.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_1_SoldermaskSTop.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL10SBot",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL10SBot.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL10SBot.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.184,
+      "web_content_pct": 0.2,
+      "iou": 0.3208,
+      "kicad_blobs": 693,
+      "web_blobs": 693,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        49786,
+        44986,
+        30609,
+        19711,
+        12989
+      ],
+      "web_blob_top5": [
+        50350,
+        45643,
+        30524,
+        19646,
+        12958
+      ],
+      "area_hist_diff": 0.012,
+      "centroid_k": [
+        0.495,
+        0.478
+      ],
+      "centroid_w": [
+        0.482,
+        0.488
+      ],
+      "centroid_dist": 0.017,
+      "coarse_sim": 0.937,
+      "coarse_iou": 0.484,
+      "score": 0.698,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL10SBot.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL10SBot.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL1STop",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL1STop.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL1STop.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.193,
+      "web_content_pct": 0.214,
+      "iou": 0.322,
+      "kicad_blobs": 1371,
+      "web_blobs": 1371,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        73373,
+        30647,
+        26330,
+        12989,
+        12989
+      ],
+      "web_blob_top5": [
+        73538,
+        30680,
+        26056,
+        12958,
+        12958
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.473,
+        0.456
+      ],
+      "centroid_w": [
+        0.459,
+        0.473
+      ],
+      "centroid_dist": 0.022,
+      "coarse_sim": 0.938,
+      "coarse_iou": 0.581,
+      "score": 0.72,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL1STop.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL1STop.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL2SInr",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL2SInr.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL2SInr.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.175,
+      "web_content_pct": 0.202,
+      "iou": 0.2524,
+      "kicad_blobs": 1231,
+      "web_blobs": 1188,
+      "blob_count_diff": 43,
+      "kicad_blob_top5": [
+        12989,
+        12989,
+        12989,
+        12989,
+        8718
+      ],
+      "web_blob_top5": [
+        12958,
+        12958,
+        12958,
+        12958,
+        12104
+      ],
+      "area_hist_diff": 0.067,
+      "centroid_k": [
+        0.49,
+        0.529
+      ],
+      "centroid_w": [
+        0.479,
+        0.544
+      ],
+      "centroid_dist": 0.018,
+      "coarse_sim": 0.939,
+      "coarse_iou": 0.593,
+      "score": 0.741,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL2SInr.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL2SInr.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL3SInr",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL3SInr.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL3SInr.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.85,
+      "web_content_pct": 0.984,
+      "iou": 0.8663,
+      "kicad_blobs": 3,
+      "web_blobs": 3,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        3094090,
+        284,
+        215
+      ],
+      "web_blob_top5": [
+        3424904,
+        269,
+        168
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.513,
+        0.489
+      ],
+      "centroid_w": [
+        0.497,
+        0.499
+      ],
+      "centroid_dist": 0.018,
+      "coarse_sim": 0.86,
+      "coarse_iou": 0.958,
+      "score": 0.915,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL3SInr.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL3SInr.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL4SInr",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL4SInr.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL4SInr.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.838,
+      "web_content_pct": 0.978,
+      "iou": 0.8579,
+      "kicad_blobs": 6,
+      "web_blobs": 5,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        2143644,
+        828691,
+        98914,
+        306,
+        220
+      ],
+      "web_blob_top5": [
+        2377956,
+        919344,
+        107748,
+        262,
+        176
+      ],
+      "area_hist_diff": 0.167,
+      "centroid_k": [
+        0.516,
+        0.491
+      ],
+      "centroid_w": [
+        0.498,
+        0.501
+      ],
+      "centroid_dist": 0.02,
+      "coarse_sim": 0.853,
+      "coarse_iou": 0.953,
+      "score": 0.912,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL4SInr.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL4SInr.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL5SInr",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL5SInr.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL5SInr.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.114,
+      "web_content_pct": 0.124,
+      "iou": 0.2298,
+      "kicad_blobs": 1051,
+      "web_blobs": 1019,
+      "blob_count_diff": 32,
+      "kicad_blob_top5": [
+        12989,
+        12989,
+        12989,
+        12989,
+        4057
+      ],
+      "web_blob_top5": [
+        17584,
+        17177,
+        16794,
+        12958,
+        12958
+      ],
+      "area_hist_diff": 0.046,
+      "centroid_k": [
+        0.469,
+        0.512
+      ],
+      "centroid_w": [
+        0.451,
+        0.527
+      ],
+      "centroid_dist": 0.023,
+      "coarse_sim": 0.958,
+      "coarse_iou": 0.557,
+      "score": 0.743,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL5SInr.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL5SInr.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL6SInr",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL6SInr.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL6SInr.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.133,
+      "web_content_pct": 0.148,
+      "iou": 0.2384,
+      "kicad_blobs": 996,
+      "web_blobs": 938,
+      "blob_count_diff": 58,
+      "kicad_blob_top5": [
+        12989,
+        12989,
+        12989,
+        12989,
+        5366
+      ],
+      "web_blob_top5": [
+        38221,
+        31789,
+        20852,
+        15511,
+        15177
+      ],
+      "area_hist_diff": 0.137,
+      "centroid_k": [
+        0.432,
+        0.5
+      ],
+      "centroid_w": [
+        0.411,
+        0.509
+      ],
+      "centroid_dist": 0.023,
+      "coarse_sim": 0.95,
+      "coarse_iou": 0.556,
+      "score": 0.713,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL6SInr.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL6SInr.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL7SInr",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL7SInr.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL7SInr.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.838,
+      "web_content_pct": 0.978,
+      "iou": 0.8577,
+      "kicad_blobs": 6,
+      "web_blobs": 5,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        2143730,
+        828691,
+        98914,
+        225,
+        218
+      ],
+      "web_blob_top5": [
+        2378139,
+        919344,
+        107748,
+        196,
+        176
+      ],
+      "area_hist_diff": 0.167,
+      "centroid_k": [
+        0.516,
+        0.49
+      ],
+      "centroid_w": [
+        0.498,
+        0.5
+      ],
+      "centroid_dist": 0.02,
+      "coarse_sim": 0.853,
+      "coarse_iou": 0.953,
+      "score": 0.912,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL7SInr.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL7SInr.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL8SInr",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL8SInr.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL8SInr.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.844,
+      "web_content_pct": 0.984,
+      "iou": 0.8679,
+      "kicad_blobs": 4,
+      "web_blobs": 3,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        3095393,
+        365,
+        225,
+        133
+      ],
+      "web_blob_top5": [
+        3428560,
+        347,
+        176
+      ],
+      "area_hist_diff": 0.25,
+      "centroid_k": [
+        0.515,
+        0.488
+      ],
+      "centroid_w": [
+        0.497,
+        0.498
+      ],
+      "centroid_dist": 0.021,
+      "coarse_sim": 0.854,
+      "coarse_iou": 0.953,
+      "score": 0.912,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL8SInr.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL8SInr.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL9SInr",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL9SInr.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL9SInr.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.138,
+      "web_content_pct": 0.154,
+      "iou": 0.2246,
+      "kicad_blobs": 1066,
+      "web_blobs": 1054,
+      "blob_count_diff": 12,
+      "kicad_blob_top5": [
+        12989,
+        12989,
+        12989,
+        12989,
+        4100
+      ],
+      "web_blob_top5": [
+        12958,
+        12958,
+        12958,
+        12958,
+        8226
+      ],
+      "area_hist_diff": 0.026,
+      "centroid_k": [
+        0.491,
+        0.502
+      ],
+      "centroid_w": [
+        0.479,
+        0.513
+      ],
+      "centroid_dist": 0.015,
+      "coarse_sim": 0.952,
+      "coarse_iou": 0.512,
+      "score": 0.708,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL9SInr.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_CopperSL9SInr.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_LegendSBot",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_LegendSBot.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_LegendSBot.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.088,
+      "web_content_pct": 0.082,
+      "iou": 0.1503,
+      "kicad_blobs": 1467,
+      "web_blobs": 1478,
+      "blob_count_diff": 11,
+      "kicad_blob_top5": [
+        37109,
+        2190,
+        1864,
+        1698,
+        1330
+      ],
+      "web_blob_top5": [
+        29600,
+        1752,
+        1488,
+        1396,
+        1074
+      ],
+      "area_hist_diff": 0.007,
+      "centroid_k": [
+        0.485,
+        0.489
+      ],
+      "centroid_w": [
+        0.475,
+        0.496
+      ],
+      "centroid_dist": 0.012,
+      "coarse_sim": 0.962,
+      "coarse_iou": 0.357,
+      "score": 0.624,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_LegendSBot.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_LegendSBot.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_LegendSTop",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_LegendSTop.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_LegendSTop.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.06,
+      "web_content_pct": 0.054,
+      "iou": 0.1202,
+      "kicad_blobs": 680,
+      "web_blobs": 684,
+      "blob_count_diff": 4,
+      "kicad_blob_top5": [
+        37109,
+        7701,
+        2051,
+        1996,
+        1954
+      ],
+      "web_blob_top5": [
+        29600,
+        6176,
+        1640,
+        1592,
+        1560
+      ],
+      "area_hist_diff": 0.006,
+      "centroid_k": [
+        0.472,
+        0.529
+      ],
+      "centroid_w": [
+        0.456,
+        0.543
+      ],
+      "centroid_dist": 0.022,
+      "coarse_sim": 0.974,
+      "coarse_iou": 0.182,
+      "score": 0.546,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_LegendSTop.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_LegendSTop.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_NonPlatedS1S10SNPTHSDrill",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_NonPlatedS1S10SNPTHSDrill.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_NonPlatedS1S10SNPTHSDrill.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.002,
+      "web_content_pct": 0.002,
+      "iou": 0.3225,
+      "kicad_blobs": 5,
+      "web_blobs": 5,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        2529,
+        2529,
+        2529,
+        741,
+        341
+      ],
+      "web_blob_top5": [
+        2445,
+        2440,
+        2439,
+        750,
+        330
+      ],
+      "area_hist_diff": 0.4,
+      "centroid_k": [
+        0.449,
+        0.382
+      ],
+      "centroid_w": [
+        0.43,
+        0.391
+      ],
+      "centroid_dist": 0.021,
+      "coarse_sim": 0.997,
+      "coarse_iou": 0.25,
+      "score": 0.655,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_NonPlatedS1S10SNPTHSDrill.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_NonPlatedS1S10SNPTHSDrill.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS1S10SPTHSDrill",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS1S10SPTHSDrill.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS1S10SPTHSDrill.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.008,
+      "web_content_pct": 0.009,
+      "iou": 0.2611,
+      "kicad_blobs": 271,
+      "web_blobs": 271,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        4621,
+        4621,
+        4621,
+        4621,
+        37
+      ],
+      "web_blob_top5": [
+        4701,
+        4701,
+        4700,
+        4700,
+        46
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.513,
+        0.47
+      ],
+      "centroid_w": [
+        0.495,
+        0.477
+      ],
+      "centroid_dist": 0.02,
+      "coarse_sim": 0.991,
+      "coarse_iou": 0.231,
+      "score": 0.63,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS1S10SPTHSDrill.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS1S10SPTHSDrill.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS1S2SBlindSDrill",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS1S2SBlindSDrill.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS1S2SBlindSDrill.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.001,
+      "web_content_pct": 0.002,
+      "iou": 0.5063,
+      "kicad_blobs": 788,
+      "web_blobs": 1014,
+      "blob_count_diff": 226,
+      "kicad_blob_top5": [
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "web_blob_top5": [
+        9,
+        9,
+        9,
+        9,
+        9
+      ],
+      "area_hist_diff": 1.657,
+      "centroid_k": [
+        0.512,
+        0.525
+      ],
+      "centroid_w": [
+        0.513,
+        0.524
+      ],
+      "centroid_dist": 0.002,
+      "coarse_sim": 0.999,
+      "coarse_iou": 1.0,
+      "score": 0.8,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS1S2SBlindSDrill.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS1S2SBlindSDrill.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS2S9SBuriedSDrill",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS2S9SBuriedSDrill.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS2S9SBuriedSDrill.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.01,
+      "web_content_pct": 0.012,
+      "iou": 0.7706,
+      "kicad_blobs": 890,
+      "web_blobs": 890,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        37,
+        37,
+        37,
+        37,
+        37
+      ],
+      "web_blob_top5": [
+        52,
+        52,
+        52,
+        52,
+        51
+      ],
+      "area_hist_diff": 1.501,
+      "centroid_k": [
+        0.49,
+        0.525
+      ],
+      "centroid_w": [
+        0.491,
+        0.525
+      ],
+      "centroid_dist": 0.0,
+      "coarse_sim": 0.997,
+      "coarse_iou": 1.0,
+      "score": 0.799,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS2S9SBuriedSDrill.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS2S9SBuriedSDrill.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS9S10SBlindSDrill",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS9S10SBlindSDrill.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_PlatedS9S10SBlindSDrill.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.0007,
+      "web_content_pct": 0.001,
+      "iou": 1.0,
+      "kicad_blobs": 0,
+      "web_blobs": 0,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [],
+      "web_blob_blob_top5": [],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.5,
+        0.5
+      ],
+      "centroid_w": [
+        0.5,
+        0.5
+      ],
+      "centroid_dist": 0.0,
+      "score": 1.0,
+      "diff_image": "",
+      "side_by_side": "",
+      "status": "PASS",
+      "note": "empty_file"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_ProfileSNP",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_ProfileSNP.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_ProfileSNP.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.006,
+      "web_content_pct": 0.004,
+      "iou": 0.0009,
+      "kicad_blobs": 1,
+      "web_blobs": 1,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        22329
+      ],
+      "web_blob_top5": [
+        14828
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.508,
+        0.492
+      ],
+      "centroid_w": [
+        0.5,
+        0.5
+      ],
+      "centroid_dist": 0.011,
+      "coarse_sim": 0.997,
+      "coarse_iou": 1.0,
+      "score": 0.799,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_ProfileSNP.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_ProfileSNP.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_SoldermaskSBot",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_SoldermaskSBot.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_SoldermaskSBot.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.166,
+      "web_content_pct": 0.174,
+      "iou": 0.3057,
+      "kicad_blobs": 1712,
+      "web_blobs": 1712,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        41449,
+        13413,
+        13413,
+        13413,
+        13413
+      ],
+      "web_blob_top5": [
+        41774,
+        13364,
+        13362,
+        13349,
+        13347
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.486,
+        0.515
+      ],
+      "centroid_w": [
+        0.475,
+        0.524
+      ],
+      "centroid_dist": 0.015,
+      "coarse_sim": 0.935,
+      "coarse_iou": 0.467,
+      "score": 0.721,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_SoldermaskSBot.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_SoldermaskSBot.png",
+      "status": "PASS"
+    },
+    {
+      "name": "PCB_Fabrication_Data_in_Gerber_Example_2_SoldermaskSTop",
+      "kicad_file": "PCB_Fabrication_Data_in_Gerber_Example_2_SoldermaskSTop.png",
+      "web_file": "PCB_Fabrication_Data_in_Gerber_Example_2_SoldermaskSTop.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.144,
+      "web_content_pct": 0.152,
+      "iou": 0.292,
+      "kicad_blobs": 2662,
+      "web_blobs": 2662,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        13413,
+        13413,
+        13413,
+        13413,
+        3465
+      ],
+      "web_blob_top5": [
+        13364,
+        13362,
+        13349,
+        13347,
+        3542
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.49,
+        0.483
+      ],
+      "centroid_w": [
+        0.477,
+        0.493
+      ],
+      "centroid_dist": 0.016,
+      "coarse_sim": 0.936,
+      "coarse_iou": 0.504,
+      "score": 0.712,
+      "diff_image": "diff_PCB_Fabrication_Data_in_Gerber_Example_2_SoldermaskSTop.png",
+      "side_by_side": "sbs_PCB_Fabrication_Data_in_Gerber_Example_2_SoldermaskSTop.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Plated",
+      "kicad_file": "Plated.png",
+      "web_file": "Plated.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.012,
+      "web_content_pct": 0.012,
+      "iou": 0.1855,
+      "kicad_blobs": 707,
+      "web_blobs": 706,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        221,
+        221,
+        221,
+        221,
+        221
+      ],
+      "web_blob_top5": [
+        198,
+        198,
+        198,
+        198,
+        197
+      ],
+      "area_hist_diff": 1.504,
+      "centroid_k": [
+        0.713,
+        0.461
+      ],
+      "centroid_w": [
+        0.692,
+        0.469
+      ],
+      "centroid_dist": 0.022,
+      "coarse_sim": 0.993,
+      "coarse_iou": 1.0,
+      "score": 0.798,
+      "diff_image": "diff_Plated.png",
+      "side_by_side": "sbs_Plated.png",
+      "status": "PASS"
+    },
+    {
+      "name": "Rout",
+      "kicad_file": "Rout.png",
+      "web_file": "Rout.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.072,
+      "web_content_pct": 0.075,
+      "iou": 0.5744,
+      "kicad_blobs": 1,
+      "web_blobs": 1,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        237323
+      ],
+      "web_blob_top5": [
+        240887
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.499,
+        0.501
+      ],
+      "centroid_w": [
+        0.492,
+        0.507
+      ],
+      "centroid_dist": 0.009,
+      "coarse_sim": 0.979,
+      "coarse_iou": 0.984,
+      "score": 0.89,
+      "diff_image": "diff_Rout.png",
+      "side_by_side": "sbs_Rout.png",
+      "status": "PASS"
+    },
+    {
+      "name": "StickHub-B_Cu",
+      "kicad_file": "StickHub-B_Cu.png",
+      "web_file": "StickHub-B_Cu.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.775,
+      "web_content_pct": 0.773,
+      "iou": 0.9512,
+      "kicad_blobs": 58,
+      "web_blobs": 58,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        772507,
+        48665,
+        25266,
+        17871,
+        12810
+      ],
+      "web_blob_top5": [
+        773804,
+        48603,
+        26102,
+        17981,
+        12819
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.496,
+        0.484
+      ],
+      "centroid_w": [
+        0.497,
+        0.484
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 0.988,
+      "coarse_iou": 1.0,
+      "score": 0.994,
+      "diff_image": "diff_StickHub-B_Cu.png",
+      "side_by_side": "sbs_StickHub-B_Cu.png",
+      "status": "PASS"
+    },
+    {
+      "name": "StickHub-B_Mask",
+      "kicad_file": "StickHub-B_Mask.png",
+      "web_file": "StickHub-B_Mask.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.185,
+      "web_content_pct": 0.187,
+      "iou": 0.8369,
+      "kicad_blobs": 247,
+      "web_blobs": 246,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        24798,
+        12425,
+        12047,
+        11641,
+        10251
+      ],
+      "web_blob_top5": [
+        29501,
+        12460,
+        11917,
+        11505,
+        10317
+      ],
+      "area_hist_diff": 0.045,
+      "centroid_k": [
+        0.554,
+        0.432
+      ],
+      "centroid_w": [
+        0.552,
+        0.435
+      ],
+      "centroid_dist": 0.003,
+      "coarse_sim": 0.989,
+      "coarse_iou": 0.962,
+      "score": 0.968,
+      "diff_image": "diff_StickHub-B_Mask.png",
+      "side_by_side": "sbs_StickHub-B_Mask.png",
+      "status": "PASS"
+    },
+    {
+      "name": "StickHub-B_Paste",
+      "kicad_file": "StickHub-B_Paste.png",
+      "web_file": "StickHub-B_Paste.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.08,
+      "web_content_pct": 0.083,
+      "iou": 0.8247,
+      "kicad_blobs": 153,
+      "web_blobs": 153,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        24798,
+        1845,
+        1844,
+        1844,
+        1843
+      ],
+      "web_blob_top5": [
+        29597,
+        1840,
+        1831,
+        1830,
+        1819
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.516,
+        0.476
+      ],
+      "centroid_w": [
+        0.515,
+        0.478
+      ],
+      "centroid_dist": 0.002,
+      "coarse_sim": 0.991,
+      "coarse_iou": 0.835,
+      "score": 0.929,
+      "diff_image": "diff_StickHub-B_Paste.png",
+      "side_by_side": "sbs_StickHub-B_Paste.png",
+      "status": "PASS"
+    },
+    {
+      "name": "StickHub-B_Silkscreen",
+      "kicad_file": "StickHub-B_Silkscreen.png",
+      "web_file": "StickHub-B_Silkscreen.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.108,
+      "web_content_pct": 0.112,
+      "iou": 0.6851,
+      "kicad_blobs": 249,
+      "web_blobs": 242,
+      "blob_count_diff": 7,
+      "kicad_blob_top5": [
+        28531,
+        3845,
+        3449,
+        3275,
+        3045
+      ],
+      "web_blob_top5": [
+        33709,
+        3794,
+        3378,
+        3343,
+        2967
+      ],
+      "area_hist_diff": 0.028,
+      "centroid_k": [
+        0.454,
+        0.539
+      ],
+      "centroid_w": [
+        0.459,
+        0.537
+      ],
+      "centroid_dist": 0.006,
+      "coarse_sim": 0.987,
+      "coarse_iou": 0.832,
+      "score": 0.914,
+      "diff_image": "diff_StickHub-B_Silkscreen.png",
+      "side_by_side": "sbs_StickHub-B_Silkscreen.png",
+      "status": "PASS"
+    },
+    {
+      "name": "StickHub-Edge_Cuts",
+      "kicad_file": "StickHub-Edge_Cuts.png",
+      "web_file": "StickHub-Edge_Cuts.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.019,
+      "web_content_pct": 0.022,
+      "iou": 0.405,
+      "kicad_blobs": 1,
+      "web_blobs": 1,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        24798
+      ],
+      "web_blob_top5": [
+        29597
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.499,
+        0.487
+      ],
+      "centroid_w": [
+        0.499,
+        0.488
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 0.995,
+      "coarse_iou": 1.0,
+      "score": 0.989,
+      "diff_image": "diff_StickHub-Edge_Cuts.png",
+      "side_by_side": "sbs_StickHub-Edge_Cuts.png",
+      "status": "PASS"
+    },
+    {
+      "name": "StickHub-F_Cu",
+      "kicad_file": "StickHub-F_Cu.png",
+      "web_file": "StickHub-F_Cu.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.658,
+      "web_content_pct": 0.658,
+      "iou": 0.9627,
+      "kicad_blobs": 34,
+      "web_blobs": 34,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        569525,
+        38968,
+        33835,
+        28604,
+        21990
+      ],
+      "web_blob_top5": [
+        571660,
+        39125,
+        33895,
+        29202,
+        21862
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.502,
+        0.415
+      ],
+      "centroid_w": [
+        0.502,
+        0.417
+      ],
+      "centroid_dist": 0.002,
+      "coarse_sim": 0.982,
+      "coarse_iou": 0.998,
+      "score": 0.987,
+      "diff_image": "diff_StickHub-F_Cu.png",
+      "side_by_side": "sbs_StickHub-F_Cu.png",
+      "status": "PASS"
+    },
+    {
+      "name": "StickHub-F_Mask",
+      "kicad_file": "StickHub-F_Mask.png",
+      "web_file": "StickHub-F_Mask.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.262,
+      "web_content_pct": 0.265,
+      "iou": 0.921,
+      "kicad_blobs": 210,
+      "web_blobs": 210,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        25310,
+        25310,
+        24798,
+        17224,
+        17224
+      ],
+      "web_blob_top5": [
+        29597,
+        25676,
+        25676,
+        16886,
+        16886
+      ],
+      "area_hist_diff": 0.095,
+      "centroid_k": [
+        0.5,
+        0.516
+      ],
+      "centroid_w": [
+        0.5,
+        0.515
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 0.985,
+      "coarse_iou": 0.951,
+      "score": 0.961,
+      "diff_image": "diff_StickHub-F_Mask.png",
+      "side_by_side": "sbs_StickHub-F_Mask.png",
+      "status": "PASS"
+    },
+    {
+      "name": "StickHub-F_Paste",
+      "kicad_file": "StickHub-F_Paste.png",
+      "web_file": "StickHub-F_Paste.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.13,
+      "web_content_pct": 0.133,
+      "iou": 0.8989,
+      "kicad_blobs": 113,
+      "web_blobs": 113,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        24798,
+        4221,
+        4221,
+        4219,
+        4219
+      ],
+      "web_blob_top5": [
+        29597,
+        4220,
+        4218,
+        4218,
+        4218
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.508,
+        0.393
+      ],
+      "centroid_w": [
+        0.509,
+        0.397
+      ],
+      "centroid_dist": 0.004,
+      "coarse_sim": 0.989,
+      "coarse_iou": 0.933,
+      "score": 0.969,
+      "diff_image": "diff_StickHub-F_Paste.png",
+      "side_by_side": "sbs_StickHub-F_Paste.png",
+      "status": "PASS"
+    },
+    {
+      "name": "StickHub-F_Silkscreen",
+      "kicad_file": "StickHub-F_Silkscreen.png",
+      "web_file": "StickHub-F_Silkscreen.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.053,
+      "web_content_pct": 0.061,
+      "iou": 0.5768,
+      "kicad_blobs": 109,
+      "web_blobs": 101,
+      "blob_count_diff": 8,
+      "kicad_blob_top5": [
+        25605,
+        1455,
+        1431,
+        1425,
+        1420
+      ],
+      "web_blob_top5": [
+        30560,
+        1605,
+        1549,
+        1531,
+        1530
+      ],
+      "area_hist_diff": 0.073,
+      "centroid_k": [
+        0.47,
+        0.406
+      ],
+      "centroid_w": [
+        0.475,
+        0.409
+      ],
+      "centroid_dist": 0.006,
+      "coarse_sim": 0.988,
+      "coarse_iou": 0.536,
+      "score": 0.84,
+      "diff_image": "diff_StickHub-F_Silkscreen.png",
+      "side_by_side": "sbs_StickHub-F_Silkscreen.png",
+      "status": "PASS"
+    },
+    {
+      "name": "StickHub-NPTH-drl",
+      "kicad_file": "StickHub-NPTH-drl.png",
+      "web_file": "StickHub-NPTH-drl.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.909,
+      "web_content_pct": 0.909,
+      "iou": 0.9999,
+      "kicad_blobs": 1,
+      "web_blobs": 1,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        3313281
+      ],
+      "web_blob_top5": [
+        3728351
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.5,
+        0.5
+      ],
+      "centroid_w": [
+        0.5,
+        0.5
+      ],
+      "centroid_dist": 0.0,
+      "coarse_sim": 1.0,
+      "coarse_iou": 1.0,
+      "score": 1.0,
+      "diff_image": "diff_StickHub-NPTH-drl.png",
+      "side_by_side": "sbs_StickHub-NPTH-drl.png",
+      "status": "PASS"
+    },
+    {
+      "name": "StickHub-PTH-drl",
+      "kicad_file": "StickHub-PTH-drl.png",
+      "web_file": "StickHub-PTH-drl.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.014,
+      "web_content_pct": 0.015,
+      "iou": 0.8353,
+      "kicad_blobs": 87,
+      "web_blobs": 87,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        553,
+        553,
+        553,
+        553,
+        553
+      ],
+      "web_blob_top5": [
+        528,
+        528,
+        526,
+        524,
+        521
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.479,
+        0.538
+      ],
+      "centroid_w": [
+        0.477,
+        0.537
+      ],
+      "centroid_dist": 0.002,
+      "coarse_sim": 0.999,
+      "coarse_iou": 1.0,
+      "score": 0.961,
+      "diff_image": "diff_StickHub-PTH-drl.png",
+      "side_by_side": "sbs_StickHub-PTH-drl.png",
+      "status": "PASS"
+    },
+    {
+      "name": "StickHub-pnp_bottom",
+      "kicad_file": "StickHub-pnp_bottom.png",
+      "web_file": "StickHub-pnp_bottom.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.074,
+      "web_content_pct": 0.079,
+      "iou": 0.7322,
+      "kicad_blobs": 217,
+      "web_blobs": 215,
+      "blob_count_diff": 2,
+      "kicad_blob_top5": [
+        24798,
+        19073,
+        7620,
+        5340,
+        4968
+      ],
+      "web_blob_top5": [
+        29597,
+        21336,
+        8036,
+        5915,
+        5715
+      ],
+      "area_hist_diff": 0.037,
+      "centroid_k": [
+        0.513,
+        0.469
+      ],
+      "centroid_w": [
+        0.512,
+        0.473
+      ],
+      "centroid_dist": 0.004,
+      "coarse_sim": 0.991,
+      "coarse_iou": 0.921,
+      "score": 0.931,
+      "diff_image": "diff_StickHub-pnp_bottom.png",
+      "side_by_side": "sbs_StickHub-pnp_bottom.png",
+      "status": "PASS"
+    },
+    {
+      "name": "StickHub-pnp_top",
+      "kicad_file": "StickHub-pnp_top.png",
+      "web_file": "StickHub-pnp_top.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.081,
+      "web_content_pct": 0.094,
+      "iou": 0.7213,
+      "kicad_blobs": 120,
+      "web_blobs": 115,
+      "blob_count_diff": 5,
+      "kicad_blob_top5": [
+        100619,
+        177,
+        177,
+        177,
+        177
+      ],
+      "web_blob_top5": [
+        119253,
+        156,
+        154,
+        154,
+        154
+      ],
+      "area_hist_diff": 0.042,
+      "centroid_k": [
+        0.491,
+        0.39
+      ],
+      "centroid_w": [
+        0.493,
+        0.393
+      ],
+      "centroid_dist": 0.003,
+      "coarse_sim": 0.986,
+      "coarse_iou": 0.763,
+      "score": 0.837,
+      "diff_image": "diff_StickHub-pnp_top.png",
+      "side_by_side": "sbs_StickHub-pnp_top.png",
+      "status": "PASS"
+    },
+    {
+      "name": "XNC_sample_file_from_specification",
+      "kicad_file": "XNC_sample_file_from_specification.png",
+      "web_file": "XNC_sample_file_from_specification.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.468,
+      "web_content_pct": 0.461,
+      "iou": 0.9532,
+      "kicad_blobs": 9,
+      "web_blobs": 9,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        1184978,
+        99875,
+        30373,
+        22861,
+        22861
+      ],
+      "web_blob_top5": [
+        1159296,
+        100197,
+        29986,
+        22998,
+        22998
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.489,
+        0.617
+      ],
+      "centroid_w": [
+        0.489,
+        0.617
+      ],
+      "centroid_dist": 0.0,
+      "coarse_sim": 0.977,
+      "coarse_iou": 0.965,
+      "score": 0.963,
+      "diff_image": "diff_XNC_sample_file_from_specification.png",
+      "side_by_side": "sbs_XNC_sample_file_from_specification.png",
+      "status": "PASS"
+    },
+    {
+      "name": "can2usb_COPPER-BOTTOM",
+      "kicad_file": "can2usb_COPPER-BOTTOM.png",
+      "web_file": "can2usb_COPPER-BOTTOM.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.79,
+      "web_content_pct": 0.851,
+      "iou": 0.9162,
+      "kicad_blobs": 15,
+      "web_blobs": 14,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        1243038,
+        891653,
+        24971,
+        24971,
+        24440
+      ],
+      "web_blob_top5": [
+        1350638,
+        968650,
+        26954,
+        26953,
+        26183
+      ],
+      "area_hist_diff": 0.067,
+      "centroid_k": [
+        0.506,
+        0.472
+      ],
+      "centroid_w": [
+        0.498,
+        0.499
+      ],
+      "centroid_dist": 0.029,
+      "coarse_sim": 0.891,
+      "coarse_iou": 0.905,
+      "score": 0.903,
+      "diff_image": "diff_can2usb_COPPER-BOTTOM.png",
+      "side_by_side": "sbs_can2usb_COPPER-BOTTOM.png",
+      "status": "PASS"
+    },
+    {
+      "name": "can2usb_COPPER-TOP",
+      "kicad_file": "can2usb_COPPER-TOP.png",
+      "web_file": "can2usb_COPPER-TOP.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.722,
+      "web_content_pct": 0.778,
+      "iou": 0.8435,
+      "kicad_blobs": 72,
+      "web_blobs": 69,
+      "blob_count_diff": 3,
+      "kicad_blob_top5": [
+        722514,
+        607804,
+        354488,
+        88542,
+        75746
+      ],
+      "web_blob_top5": [
+        765479,
+        641712,
+        374498,
+        128615,
+        81259
+      ],
+      "area_hist_diff": 0.042,
+      "centroid_k": [
+        0.504,
+        0.484
+      ],
+      "centroid_w": [
+        0.495,
+        0.51
+      ],
+      "centroid_dist": 0.027,
+      "coarse_sim": 0.864,
+      "coarse_iou": 0.893,
+      "score": 0.881,
+      "diff_image": "diff_can2usb_COPPER-TOP.png",
+      "side_by_side": "sbs_can2usb_COPPER-TOP.png",
+      "status": "PASS"
+    },
+    {
+      "name": "can2usb_DRILLS-NPTH",
+      "kicad_file": "can2usb_DRILLS-NPTH.png",
+      "web_file": "can2usb_DRILLS-NPTH.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.257,
+      "web_content_pct": 0.257,
+      "iou": 0.9903,
+      "kicad_blobs": 2,
+      "web_blobs": 2,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        71953,
+        71953
+      ],
+      "web_blob_top5": [
+        71891,
+        71877
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.498,
+        0.5
+      ],
+      "centroid_w": [
+        0.498,
+        0.5
+      ],
+      "centroid_dist": 0.0,
+      "coarse_sim": 0.999,
+      "coarse_iou": 1.0,
+      "score": 0.998,
+      "diff_image": "diff_can2usb_DRILLS-NPTH.png",
+      "side_by_side": "sbs_can2usb_DRILLS-NPTH.png",
+      "status": "PASS"
+    },
+    {
+      "name": "can2usb_DRILLS-PTH",
+      "kicad_file": "can2usb_DRILLS-PTH.png",
+      "web_file": "can2usb_DRILLS-PTH.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.014,
+      "web_content_pct": 0.014,
+      "iou": 0.8842,
+      "kicad_blobs": 69,
+      "web_blobs": 69,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        4857,
+        4857,
+        4857,
+        2529,
+        2529
+      ],
+      "web_blob_top5": [
+        5120,
+        5116,
+        5114,
+        2633,
+        2633
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.555,
+        0.597
+      ],
+      "centroid_w": [
+        0.553,
+        0.593
+      ],
+      "centroid_dist": 0.004,
+      "coarse_sim": 0.999,
+      "coarse_iou": 1.0,
+      "score": 0.992,
+      "diff_image": "diff_can2usb_DRILLS-PTH.png",
+      "side_by_side": "sbs_can2usb_DRILLS-PTH.png",
+      "status": "PASS"
+    },
+    {
+      "name": "can2usb_OUTLINES",
+      "kicad_file": "can2usb_OUTLINES.png",
+      "web_file": "can2usb_OUTLINES.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.003,
+      "web_content_pct": 0.006,
+      "iou": 0.0,
+      "kicad_blobs": 1,
+      "web_blobs": 1,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        8338
+      ],
+      "web_blob_top5": [
+        16748
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.499,
+        0.485
+      ],
+      "centroid_w": [
+        0.5,
+        0.499
+      ],
+      "centroid_dist": 0.014,
+      "coarse_sim": 0.995,
+      "coarse_iou": 1.0,
+      "score": 0.798,
+      "diff_image": "diff_can2usb_OUTLINES.png",
+      "side_by_side": "sbs_can2usb_OUTLINES.png",
+      "status": "PASS"
+    },
+    {
+      "name": "can2usb_PnP-BOT",
+      "kicad_file": "can2usb_PnP-BOT.png",
+      "web_file": "can2usb_PnP-BOT.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.003,
+      "web_content_pct": 0.006,
+      "iou": 0.0,
+      "kicad_blobs": 1,
+      "web_blobs": 1,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        8302
+      ],
+      "web_blob_top5": [
+        16748
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.497,
+        0.487
+      ],
+      "centroid_w": [
+        0.5,
+        0.499
+      ],
+      "centroid_dist": 0.012,
+      "coarse_sim": 0.995,
+      "coarse_iou": 1.0,
+      "score": 0.798,
+      "diff_image": "diff_can2usb_PnP-BOT.png",
+      "side_by_side": "sbs_can2usb_PnP-BOT.png",
+      "status": "PASS"
+    },
+    {
+      "name": "can2usb_PnP-TOP",
+      "kicad_file": "can2usb_PnP-TOP.png",
+      "web_file": "can2usb_PnP-TOP.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.047,
+      "web_content_pct": 0.059,
+      "iou": 0.1532,
+      "kicad_blobs": 74,
+      "web_blobs": 74,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        69327,
+        14946,
+        10666,
+        8676,
+        7176
+      ],
+      "web_blob_top5": [
+        100480,
+        18404,
+        13172,
+        10700,
+        6376
+      ],
+      "area_hist_diff": 0.027,
+      "centroid_k": [
+        0.502,
+        0.425
+      ],
+      "centroid_w": [
+        0.498,
+        0.447
+      ],
+      "centroid_dist": 0.022,
+      "coarse_sim": 0.967,
+      "coarse_iou": 0.0,
+      "score": 0.472,
+      "diff_image": "diff_can2usb_PnP-TOP.png",
+      "side_by_side": "sbs_can2usb_PnP-TOP.png",
+      "status": "PASS"
+    },
+    {
+      "name": "can2usb_SILKSCREEN-BOTTOM",
+      "kicad_file": "can2usb_SILKSCREEN-BOTTOM.png",
+      "web_file": "can2usb_SILKSCREEN-BOTTOM.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.0,
+      "web_content_pct": 0.0,
+      "iou": 1.0,
+      "kicad_blobs": 0,
+      "web_blobs": 0,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [],
+      "web_blob_blob_top5": [],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.5,
+        0.5
+      ],
+      "centroid_w": [
+        0.5,
+        0.5
+      ],
+      "centroid_dist": 0.0,
+      "score": 1.0,
+      "diff_image": "",
+      "side_by_side": "",
+      "status": "PASS",
+      "note": "empty_file"
+    },
+    {
+      "name": "can2usb_SILKSCREEN-TOP",
+      "kicad_file": "can2usb_SILKSCREEN-TOP.png",
+      "web_file": "can2usb_SILKSCREEN-TOP.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.05,
+      "web_content_pct": 0.053,
+      "iou": 0.4297,
+      "kicad_blobs": 96,
+      "web_blobs": 94,
+      "blob_count_diff": 2,
+      "kicad_blob_top5": [
+        18632,
+        8103,
+        8103,
+        7755,
+        6307
+      ],
+      "web_blob_top5": [
+        20989,
+        9175,
+        9173,
+        8458,
+        7074
+      ],
+      "area_hist_diff": 0.021,
+      "centroid_k": [
+        0.426,
+        0.59
+      ],
+      "centroid_w": [
+        0.416,
+        0.608
+      ],
+      "centroid_dist": 0.02,
+      "coarse_sim": 0.958,
+      "coarse_iou": 0.299,
+      "score": 0.649,
+      "diff_image": "diff_can2usb_SILKSCREEN-TOP.png",
+      "side_by_side": "sbs_can2usb_SILKSCREEN-TOP.png",
+      "status": "PASS"
+    },
+    {
+      "name": "can2usb_SOLDERMASK-BOTTOM",
+      "kicad_file": "can2usb_SOLDERMASK-BOTTOM.png",
+      "web_file": "can2usb_SOLDERMASK-BOTTOM.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.068,
+      "web_content_pct": 0.068,
+      "iou": 0.9811,
+      "kicad_blobs": 9,
+      "web_blobs": 9,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        41423,
+        41423,
+        41423,
+        17688,
+        14986
+      ],
+      "web_blob_top5": [
+        47753,
+        47750,
+        47743,
+        20656,
+        17338
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.713,
+        0.601
+      ],
+      "centroid_w": [
+        0.711,
+        0.601
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 0.999,
+      "coarse_iou": 1.0,
+      "score": 0.999,
+      "diff_image": "diff_can2usb_SOLDERMASK-BOTTOM.png",
+      "side_by_side": "sbs_can2usb_SOLDERMASK-BOTTOM.png",
+      "status": "PASS"
+    },
+    {
+      "name": "can2usb_SOLDERMASK-TOP",
+      "kicad_file": "can2usb_SOLDERMASK-TOP.png",
+      "web_file": "can2usb_SOLDERMASK-TOP.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.25,
+      "web_content_pct": 0.274,
+      "iou": 0.7035,
+      "kicad_blobs": 149,
+      "web_blobs": 147,
+      "blob_count_diff": 2,
+      "kicad_blob_top5": [
+        35928,
+        35928,
+        35928,
+        21770,
+        21768
+      ],
+      "web_blob_top5": [
+        40601,
+        40592,
+        40481,
+        24358,
+        24358
+      ],
+      "area_hist_diff": 0.107,
+      "centroid_k": [
+        0.499,
+        0.44
+      ],
+      "centroid_w": [
+        0.489,
+        0.471
+      ],
+      "centroid_dist": 0.033,
+      "coarse_sim": 0.819,
+      "coarse_iou": 0.521,
+      "score": 0.686,
+      "diff_image": "diff_can2usb_SOLDERMASK-TOP.png",
+      "side_by_side": "sbs_can2usb_SOLDERMASK-TOP.png",
+      "status": "PASS"
+    },
+    {
+      "name": "can2usb_SOLDERPASTE-BOTTOM",
+      "kicad_file": "can2usb_SOLDERPASTE-BOTTOM.png",
+      "web_file": "can2usb_SOLDERPASTE-BOTTOM.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.0196,
+      "web_content_pct": 0.0,
+      "iou": 1.0,
+      "kicad_blobs": 0,
+      "web_blobs": 0,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [],
+      "web_blob_blob_top5": [],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.5,
+        0.5
+      ],
+      "centroid_w": [
+        0.5,
+        0.5
+      ],
+      "centroid_dist": 0.0,
+      "score": 1.0,
+      "diff_image": "",
+      "side_by_side": "",
+      "status": "PASS",
+      "note": "empty_file"
+    },
+    {
+      "name": "can2usb_SOLDERPASTE-TOP",
+      "kicad_file": "can2usb_SOLDERPASTE-TOP.png",
+      "web_file": "can2usb_SOLDERPASTE-TOP.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.104,
+      "web_content_pct": 0.118,
+      "iou": 0.565,
+      "kicad_blobs": 140,
+      "web_blobs": 139,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        15587,
+        15478,
+        15444,
+        15336,
+        8787
+      ],
+      "web_blob_top5": [
+        16837,
+        16837,
+        16724,
+        16724,
+        9555
+      ],
+      "area_hist_diff": 0.007,
+      "centroid_k": [
+        0.468,
+        0.395
+      ],
+      "centroid_w": [
+        0.459,
+        0.433
+      ],
+      "centroid_dist": 0.04,
+      "coarse_sim": 0.879,
+      "coarse_iou": 0.23,
+      "score": 0.575,
+      "diff_image": "diff_can2usb_SOLDERPASTE-TOP.png",
+      "side_by_side": "sbs_can2usb_SOLDERPASTE-TOP.png",
+      "status": "PASS"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-B_Mask",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-B_Mask.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-B_Mask.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.068,
+      "web_content_pct": 0.071,
+      "iou": 0.8682,
+      "kicad_blobs": 302,
+      "web_blobs": 302,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        67140,
+        9951,
+        7117,
+        5260,
+        4857
+      ],
+      "web_blob_top5": [
+        77108,
+        10058,
+        7244,
+        5369,
+        4766
+      ],
+      "area_hist_diff": 0.007,
+      "centroid_k": [
+        0.49,
+        0.468
+      ],
+      "centroid_w": [
+        0.491,
+        0.472
+      ],
+      "centroid_dist": 0.003,
+      "coarse_sim": 0.996,
+      "coarse_iou": 0.831,
+      "score": 0.939,
+      "diff_image": "diff_kit-dev-coldfire-xilinx_5213-B_Mask.png",
+      "side_by_side": "sbs_kit-dev-coldfire-xilinx_5213-B_Mask.png",
+      "status": "PASS"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-B_Paste",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-B_Paste.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-B_Paste.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.015,
+      "web_content_pct": 0.017,
+      "iou": 0.7517,
+      "kicad_blobs": 29,
+      "web_blobs": 29,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        67588,
+        557,
+        557,
+        557,
+        557
+      ],
+      "web_blob_top5": [
+        77108,
+        558,
+        556,
+        556,
+        556
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.544,
+        0.514
+      ],
+      "centroid_w": [
+        0.54,
+        0.512
+      ],
+      "centroid_dist": 0.005,
+      "coarse_sim": 0.998,
+      "coarse_iou": 1.0,
+      "score": 0.969,
+      "diff_image": "diff_kit-dev-coldfire-xilinx_5213-B_Paste.png",
+      "side_by_side": "sbs_kit-dev-coldfire-xilinx_5213-B_Paste.png",
+      "status": "PASS"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-B_Silkscreen",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-B_Silkscreen.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-B_Silkscreen.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.014,
+      "web_content_pct": 0.015,
+      "iou": 0.9381,
+      "kicad_blobs": 82,
+      "web_blobs": 71,
+      "blob_count_diff": 11,
+      "kicad_blob_top5": [
+        67084,
+        203,
+        196,
+        194,
+        117
+      ],
+      "web_blob_top5": [
+        77108,
+        324,
+        308,
+        302,
+        299
+      ],
+      "area_hist_diff": 0.134,
+      "centroid_k": [
+        0.521,
+        0.507
+      ],
+      "centroid_w": [
+        0.518,
+        0.506
+      ],
+      "centroid_dist": 0.002,
+      "coarse_sim": 0.998,
+      "coarse_iou": 1.0,
+      "score": 0.999,
+      "diff_image": "diff_kit-dev-coldfire-xilinx_5213-B_Silkscreen.png",
+      "side_by_side": "sbs_kit-dev-coldfire-xilinx_5213-B_Silkscreen.png",
+      "status": "PASS"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-Bottom_layer",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-Bottom_layer.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-Bottom_layer.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.824,
+      "web_content_pct": 0.83,
+      "iou": 0.9437,
+      "kicad_blobs": 378,
+      "web_blobs": 377,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        3735053,
+        67056,
+        14051,
+        13762,
+        11168
+      ],
+      "web_blob_top5": [
+        3788598,
+        77108,
+        15937,
+        15576,
+        14071
+      ],
+      "area_hist_diff": 0.003,
+      "centroid_k": [
+        0.504,
+        0.499
+      ],
+      "centroid_w": [
+        0.503,
+        0.499
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 0.99,
+      "coarse_iou": 0.992,
+      "score": 0.991,
+      "diff_image": "diff_kit-dev-coldfire-xilinx_5213-Bottom_layer.png",
+      "side_by_side": "sbs_kit-dev-coldfire-xilinx_5213-Bottom_layer.png",
+      "status": "PASS"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-Edge_Cuts",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-Edge_Cuts.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-Edge_Cuts.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.012,
+      "web_content_pct": 0.014,
+      "iou": 0.7264,
+      "kicad_blobs": 1,
+      "web_blobs": 1,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        67588
+      ],
+      "web_blob_top5": [
+        77108
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.5,
+        0.5
+      ],
+      "centroid_w": [
+        0.5,
+        0.5
+      ],
+      "centroid_dist": 0.0,
+      "coarse_sim": 0.998,
+      "coarse_iou": 1.0,
+      "score": 0.999,
+      "diff_image": "diff_kit-dev-coldfire-xilinx_5213-Edge_Cuts.png",
+      "side_by_side": "sbs_kit-dev-coldfire-xilinx_5213-Edge_Cuts.png",
+      "status": "PASS"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-F_Mask",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-F_Mask.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-F_Mask.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.111,
+      "web_content_pct": 0.115,
+      "iou": 0.9545,
+      "kicad_blobs": 794,
+      "web_blobs": 794,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        67084,
+        38009,
+        9951,
+        7117,
+        5589
+      ],
+      "web_blob_top5": [
+        77108,
+        38403,
+        10058,
+        7244,
+        5670
+      ],
+      "area_hist_diff": 0.005,
+      "centroid_k": [
+        0.441,
+        0.459
+      ],
+      "centroid_w": [
+        0.444,
+        0.461
+      ],
+      "centroid_dist": 0.003,
+      "coarse_sim": 0.996,
+      "coarse_iou": 0.899,
+      "score": 0.96,
+      "diff_image": "diff_kit-dev-coldfire-xilinx_5213-F_Mask.png",
+      "side_by_side": "sbs_kit-dev-coldfire-xilinx_5213-F_Mask.png",
+      "status": "PASS"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-F_Paste",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-F_Paste.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-F_Paste.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.057,
+      "web_content_pct": 0.06,
+      "iou": 0.8252,
+      "kicad_blobs": 524,
+      "web_blobs": 524,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        67588,
+        9059,
+        9059,
+        9058,
+        9058
+      ],
+      "web_blob_top5": [
+        77108,
+        9135,
+        9135,
+        9057,
+        9055
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.413,
+        0.463
+      ],
+      "centroid_w": [
+        0.417,
+        0.463
+      ],
+      "centroid_dist": 0.004,
+      "coarse_sim": 0.997,
+      "coarse_iou": 0.893,
+      "score": 0.959,
+      "diff_image": "diff_kit-dev-coldfire-xilinx_5213-F_Paste.png",
+      "side_by_side": "sbs_kit-dev-coldfire-xilinx_5213-F_Paste.png",
+      "status": "PASS"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-F_Silkscreen",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-F_Silkscreen.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-F_Silkscreen.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.046,
+      "web_content_pct": 0.041,
+      "iou": 0.6327,
+      "kicad_blobs": 900,
+      "web_blobs": 844,
+      "blob_count_diff": 56,
+      "kicad_blob_top5": [
+        77995,
+        7872,
+        7069,
+        7051,
+        5418
+      ],
+      "web_blob_top5": [
+        66913,
+        6903,
+        6851,
+        5242,
+        3602
+      ],
+      "area_hist_diff": 0.064,
+      "centroid_k": [
+        0.431,
+        0.538
+      ],
+      "centroid_w": [
+        0.42,
+        0.53
+      ],
+      "centroid_dist": 0.014,
+      "coarse_sim": 0.993,
+      "coarse_iou": 0.833,
+      "score": 0.842,
+      "diff_image": "diff_kit-dev-coldfire-xilinx_5213-F_Silkscreen.png",
+      "side_by_side": "sbs_kit-dev-coldfire-xilinx_5213-F_Silkscreen.png",
+      "status": "PASS"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-GND_layer",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-GND_layer.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-GND_layer.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.754,
+      "web_content_pct": 0.761,
+      "iou": 0.9787,
+      "kicad_blobs": 383,
+      "web_blobs": 383,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        3501801,
+        67532,
+        9987,
+        9853,
+        9666
+      ],
+      "web_blob_top5": [
+        3503313,
+        77108,
+        10286,
+        10264,
+        10162
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.512,
+        0.488
+      ],
+      "centroid_w": [
+        0.512,
+        0.49
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 0.988,
+      "coarse_iou": 0.991,
+      "score": 0.989,
+      "diff_image": "diff_kit-dev-coldfire-xilinx_5213-GND_layer.png",
+      "side_by_side": "sbs_kit-dev-coldfire-xilinx_5213-GND_layer.png",
+      "status": "PASS"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-NPTH-drl",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-NPTH-drl.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-NPTH-drl.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.0196,
+      "web_content_pct": 0.0,
+      "iou": 1.0,
+      "kicad_blobs": 0,
+      "web_blobs": 0,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [],
+      "web_blob_blob_top5": [],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.5,
+        0.5
+      ],
+      "centroid_w": [
+        0.5,
+        0.5
+      ],
+      "centroid_dist": 0.0,
+      "score": 1.0,
+      "diff_image": "",
+      "side_by_side": "",
+      "status": "PASS",
+      "note": "empty_file"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-PTH-drl",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-PTH-drl.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-PTH-drl.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.026,
+      "web_content_pct": 0.025,
+      "iou": 0.7591,
+      "kicad_blobs": 526,
+      "web_blobs": 526,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        3297,
+        3297,
+        3297,
+        3297,
+        3297
+      ],
+      "web_blob_top5": [
+        3846,
+        3845,
+        3845,
+        3842,
+        3842
+      ],
+      "area_hist_diff": 0.004,
+      "centroid_k": [
+        0.504,
+        0.46
+      ],
+      "centroid_w": [
+        0.505,
+        0.46
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 0.999,
+      "coarse_iou": 0.857,
+      "score": 0.953,
+      "diff_image": "diff_kit-dev-coldfire-xilinx_5213-PTH-drl.png",
+      "side_by_side": "sbs_kit-dev-coldfire-xilinx_5213-PTH-drl.png",
+      "status": "PASS"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-Top_layer",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-Top_layer.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-Top_layer.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.189,
+      "web_content_pct": 0.194,
+      "iou": 0.8188,
+      "kicad_blobs": 622,
+      "web_blobs": 621,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        67588,
+        43585,
+        28615,
+        20390,
+        17091
+      ],
+      "web_blob_top5": [
+        77108,
+        43410,
+        28163,
+        20666,
+        16214
+      ],
+      "area_hist_diff": 0.008,
+      "centroid_k": [
+        0.47,
+        0.454
+      ],
+      "centroid_w": [
+        0.471,
+        0.458
+      ],
+      "centroid_dist": 0.004,
+      "coarse_sim": 0.99,
+      "coarse_iou": 0.946,
+      "score": 0.963,
+      "diff_image": "diff_kit-dev-coldfire-xilinx_5213-Top_layer.png",
+      "side_by_side": "sbs_kit-dev-coldfire-xilinx_5213-Top_layer.png",
+      "status": "PASS"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-VDD_layer",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-VDD_layer.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-VDD_layer.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.823,
+      "web_content_pct": 0.825,
+      "iou": 0.9899,
+      "kicad_blobs": 458,
+      "web_blobs": 458,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        4067668,
+        67560,
+        10817,
+        10058,
+        9178
+      ],
+      "web_blob_top5": [
+        4063900,
+        77108,
+        11493,
+        10058,
+        9988
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.495,
+        0.483
+      ],
+      "centroid_w": [
+        0.495,
+        0.483
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 0.994,
+      "coarse_iou": 0.998,
+      "score": 0.99,
+      "diff_image": "diff_kit-dev-coldfire-xilinx_5213-VDD_layer.png",
+      "side_by_side": "sbs_kit-dev-coldfire-xilinx_5213-VDD_layer.png",
+      "status": "PASS"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-pnp_bottom",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-pnp_bottom.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-pnp_bottom.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.014,
+      "web_content_pct": 0.015,
+      "iou": 0.5307,
+      "kicad_blobs": 54,
+      "web_blobs": 57,
+      "blob_count_diff": 3,
+      "kicad_blob_top5": [
+        66384,
+        614,
+        614,
+        614,
+        614
+      ],
+      "web_blob_top5": [
+        77108,
+        412,
+        412,
+        412,
+        412
+      ],
+      "area_hist_diff": 0.053,
+      "centroid_k": [
+        0.53,
+        0.509
+      ],
+      "centroid_w": [
+        0.519,
+        0.506
+      ],
+      "centroid_dist": 0.011,
+      "coarse_sim": 0.998,
+      "coarse_iou": 1.0,
+      "score": 0.999,
+      "diff_image": "diff_kit-dev-coldfire-xilinx_5213-pnp_bottom.png",
+      "side_by_side": "sbs_kit-dev-coldfire-xilinx_5213-pnp_bottom.png",
+      "status": "PASS"
+    },
+    {
+      "name": "kit-dev-coldfire-xilinx_5213-pnp_top",
+      "kicad_file": "kit-dev-coldfire-xilinx_5213-pnp_top.png",
+      "web_file": "kit-dev-coldfire-xilinx_5213-pnp_top.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.048,
+      "web_content_pct": 0.035,
+      "iou": 0.5267,
+      "kicad_blobs": 847,
+      "web_blobs": 674,
+      "blob_count_diff": 173,
+      "kicad_blob_top5": [
+        80550,
+        8006,
+        5570,
+        4456,
+        3860
+      ],
+      "web_blob_top5": [
+        64292,
+        5332,
+        3708,
+        2956,
+        2572
+      ],
+      "area_hist_diff": 0.204,
+      "centroid_k": [
+        0.466,
+        0.551
+      ],
+      "centroid_w": [
+        0.466,
+        0.552
+      ],
+      "centroid_dist": 0.002,
+      "coarse_sim": 0.987,
+      "coarse_iou": 1.0,
+      "score": 0.595,
+      "diff_image": "diff_kit-dev-coldfire-xilinx_5213-pnp_top.png",
+      "side_by_side": "sbs_kit-dev-coldfire-xilinx_5213-pnp_top.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-B_Mask",
+      "kicad_file": "li-ion_charger-B_Mask.png",
+      "web_file": "li-ion_charger-B_Mask.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.035,
+      "web_content_pct": 0.036,
+      "iou": 0.9677,
+      "kicad_blobs": 159,
+      "web_blobs": 159,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        5893,
+        5893,
+        5893,
+        5893,
+        3600
+      ],
+      "web_blob_top5": [
+        5934,
+        5930,
+        5922,
+        5919,
+        3600
+      ],
+      "area_hist_diff": 0.038,
+      "centroid_k": [
+        0.433,
+        0.555
+      ],
+      "centroid_w": [
+        0.431,
+        0.554
+      ],
+      "centroid_dist": 0.002,
+      "coarse_sim": 0.999,
+      "coarse_iou": 0.967,
+      "score": 0.988,
+      "diff_image": "diff_li-ion_charger-B_Mask.png",
+      "side_by_side": "sbs_li-ion_charger-B_Mask.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-B_Paste",
+      "kicad_file": "li-ion_charger-B_Paste.png",
+      "web_file": "li-ion_charger-B_Paste.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.022,
+      "web_content_pct": 0.022,
+      "iou": 0.9088,
+      "kicad_blobs": 88,
+      "web_blobs": 88,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        1593,
+        1593,
+        1558,
+        1558,
+        1168
+      ],
+      "web_blob_top5": [
+        1531,
+        1529,
+        1528,
+        1527,
+        1153
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.498,
+        0.537
+      ],
+      "centroid_w": [
+        0.497,
+        0.537
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 1.0,
+      "coarse_iou": 0.944,
+      "score": 0.983,
+      "diff_image": "diff_li-ion_charger-B_Paste.png",
+      "side_by_side": "sbs_li-ion_charger-B_Paste.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-B_Silkscreen",
+      "kicad_file": "li-ion_charger-B_Silkscreen.png",
+      "web_file": "li-ion_charger-B_Silkscreen.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.012,
+      "web_content_pct": 0.012,
+      "iou": 0.7252,
+      "kicad_blobs": 195,
+      "web_blobs": 194,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        1461,
+        1237,
+        1035,
+        942,
+        906
+      ],
+      "web_blob_top5": [
+        1752,
+        1217,
+        1216,
+        871,
+        848
+      ],
+      "area_hist_diff": 0.303,
+      "centroid_k": [
+        0.593,
+        0.55
+      ],
+      "centroid_w": [
+        0.595,
+        0.552
+      ],
+      "centroid_dist": 0.003,
+      "coarse_sim": 0.999,
+      "coarse_iou": 0.667,
+      "score": 0.85,
+      "diff_image": "diff_li-ion_charger-B_Silkscreen.png",
+      "side_by_side": "sbs_li-ion_charger-B_Silkscreen.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-Composant",
+      "kicad_file": "li-ion_charger-Composant.png",
+      "web_file": "li-ion_charger-Composant.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.554,
+      "web_content_pct": 0.553,
+      "iou": 0.9134,
+      "kicad_blobs": 326,
+      "web_blobs": 326,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        1015482,
+        408978,
+        219306,
+        109557,
+        105931
+      ],
+      "web_blob_top5": [
+        1019621,
+        408846,
+        219550,
+        110279,
+        106350
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.584,
+        0.5
+      ],
+      "centroid_w": [
+        0.587,
+        0.5
+      ],
+      "centroid_dist": 0.002,
+      "coarse_sim": 0.992,
+      "coarse_iou": 0.972,
+      "score": 0.982,
+      "diff_image": "diff_li-ion_charger-Composant.png",
+      "side_by_side": "sbs_li-ion_charger-Composant.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-Cuivre",
+      "kicad_file": "li-ion_charger-Cuivre.png",
+      "web_file": "li-ion_charger-Cuivre.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.809,
+      "web_content_pct": 0.804,
+      "iou": 0.9672,
+      "kicad_blobs": 137,
+      "web_blobs": 137,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        3871100,
+        93720,
+        71257,
+        30107,
+        9192
+      ],
+      "web_blob_top5": [
+        3866051,
+        93410,
+        71394,
+        31753,
+        8210
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.511,
+        0.5
+      ],
+      "centroid_w": [
+        0.512,
+        0.499
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 0.994,
+      "coarse_iou": 0.989,
+      "score": 0.986,
+      "diff_image": "diff_li-ion_charger-Cuivre.png",
+      "side_by_side": "sbs_li-ion_charger-Cuivre.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-Edge_Cuts",
+      "kicad_file": "li-ion_charger-Edge_Cuts.png",
+      "web_file": "li-ion_charger-Edge_Cuts.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.009,
+      "web_content_pct": 0.011,
+      "iou": 0.3715,
+      "kicad_blobs": 1,
+      "web_blobs": 1,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        47060
+      ],
+      "web_blob_top5": [
+        56388
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.5,
+        0.5
+      ],
+      "centroid_w": [
+        0.5,
+        0.5
+      ],
+      "centroid_dist": 0.0,
+      "coarse_sim": 0.999,
+      "coarse_iou": 1.0,
+      "score": 0.799,
+      "diff_image": "diff_li-ion_charger-Edge_Cuts.png",
+      "side_by_side": "sbs_li-ion_charger-Edge_Cuts.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-F_Mask",
+      "kicad_file": "li-ion_charger-F_Mask.png",
+      "web_file": "li-ion_charger-F_Mask.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.125,
+      "web_content_pct": 0.126,
+      "iou": 0.9481,
+      "kicad_blobs": 537,
+      "web_blobs": 537,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        22862,
+        22862,
+        22861,
+        22860,
+        8064
+      ],
+      "web_blob_top5": [
+        22855,
+        22710,
+        22708,
+        22570,
+        8063
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.477,
+        0.487
+      ],
+      "centroid_w": [
+        0.476,
+        0.488
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 0.998,
+      "coarse_iou": 0.941,
+      "score": 0.981,
+      "diff_image": "diff_li-ion_charger-F_Mask.png",
+      "side_by_side": "sbs_li-ion_charger-F_Mask.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-F_Paste",
+      "kicad_file": "li-ion_charger-F_Paste.png",
+      "web_file": "li-ion_charger-F_Paste.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.105,
+      "web_content_pct": 0.106,
+      "iou": 0.9624,
+      "kicad_blobs": 478,
+      "web_blobs": 478,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        8646,
+        8646,
+        8646,
+        8646,
+        8646
+      ],
+      "web_blob_top5": [
+        8578,
+        8514,
+        8449,
+        8449,
+        8449
+      ],
+      "area_hist_diff": 0.017,
+      "centroid_k": [
+        0.48,
+        0.483
+      ],
+      "centroid_w": [
+        0.479,
+        0.483
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 0.998,
+      "coarse_iou": 0.946,
+      "score": 0.976,
+      "diff_image": "diff_li-ion_charger-F_Paste.png",
+      "side_by_side": "sbs_li-ion_charger-F_Paste.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-F_Silkscreen",
+      "kicad_file": "li-ion_charger-F_Silkscreen.png",
+      "web_file": "li-ion_charger-F_Silkscreen.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.051,
+      "web_content_pct": 0.052,
+      "iou": 0.2893,
+      "kicad_blobs": 607,
+      "web_blobs": 606,
+      "blob_count_diff": 1,
+      "kicad_blob_top5": [
+        15232,
+        9281,
+        6222,
+        5258,
+        5022
+      ],
+      "web_blob_top5": [
+        13205,
+        10646,
+        7770,
+        7712,
+        5445
+      ],
+      "area_hist_diff": 0.058,
+      "centroid_k": [
+        0.471,
+        0.499
+      ],
+      "centroid_w": [
+        0.484,
+        0.5
+      ],
+      "centroid_dist": 0.013,
+      "coarse_sim": 0.993,
+      "coarse_iou": 0.5,
+      "score": 0.775,
+      "diff_image": "diff_li-ion_charger-F_Silkscreen.png",
+      "side_by_side": "sbs_li-ion_charger-F_Silkscreen.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-Inner2",
+      "kicad_file": "li-ion_charger-Inner2.png",
+      "web_file": "li-ion_charger-Inner2.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.955,
+      "web_content_pct": 0.954,
+      "iou": 0.998,
+      "kicad_blobs": 171,
+      "web_blobs": 171,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        4972071,
+        3249,
+        3249,
+        3249,
+        3249
+      ],
+      "web_blob_top5": [
+        4962322,
+        3306,
+        3305,
+        3249,
+        3249
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.504,
+        0.498
+      ],
+      "centroid_w": [
+        0.504,
+        0.498
+      ],
+      "centroid_dist": 0.0,
+      "coarse_sim": 0.999,
+      "coarse_iou": 1.0,
+      "score": 0.999,
+      "diff_image": "diff_li-ion_charger-Inner2.png",
+      "side_by_side": "sbs_li-ion_charger-Inner2.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-Inner3",
+      "kicad_file": "li-ion_charger-Inner3.png",
+      "web_file": "li-ion_charger-Inner3.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.744,
+      "web_content_pct": 0.742,
+      "iou": 0.9938,
+      "kicad_blobs": 194,
+      "web_blobs": 194,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        1250961,
+        1135658,
+        1009276,
+        338096,
+        12485
+      ],
+      "web_blob_top5": [
+        1251770,
+        1133861,
+        1009450,
+        337117,
+        10318
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.462,
+        0.504
+      ],
+      "centroid_w": [
+        0.462,
+        0.504
+      ],
+      "centroid_dist": 0.0,
+      "coarse_sim": 0.996,
+      "coarse_iou": 0.986,
+      "score": 0.991,
+      "diff_image": "diff_li-ion_charger-Inner3.png",
+      "side_by_side": "sbs_li-ion_charger-Inner3.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-NPTH-drl",
+      "kicad_file": "li-ion_charger-NPTH-drl.png",
+      "web_file": "li-ion_charger-NPTH-drl.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.005,
+      "web_content_pct": 0.005,
+      "iou": 0.9786,
+      "kicad_blobs": 4,
+      "web_blobs": 4,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        6173,
+        6173,
+        6173,
+        6173
+      ],
+      "web_blob_top5": [
+        6205,
+        6205,
+        6197,
+        6195
+      ],
+      "area_hist_diff": 0.0,
+      "centroid_k": [
+        0.5,
+        0.5
+      ],
+      "centroid_w": [
+        0.5,
+        0.5
+      ],
+      "centroid_dist": 0.0,
+      "coarse_sim": 1.0,
+      "coarse_iou": 1.0,
+      "score": 1.0,
+      "diff_image": "diff_li-ion_charger-NPTH-drl.png",
+      "side_by_side": "sbs_li-ion_charger-NPTH-drl.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-PTH-drl",
+      "kicad_file": "li-ion_charger-PTH-drl.png",
+      "web_file": "li-ion_charger-PTH-drl.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.007,
+      "web_content_pct": 0.007,
+      "iou": 0.7812,
+      "kicad_blobs": 234,
+      "web_blobs": 234,
+      "blob_count_diff": 0,
+      "kicad_blob_top5": [
+        741,
+        741,
+        741,
+        741,
+        741
+      ],
+      "web_blob_top5": [
+        774,
+        772,
+        771,
+        768,
+        766
+      ],
+      "area_hist_diff": 0.154,
+      "centroid_k": [
+        0.396,
+        0.562
+      ],
+      "centroid_w": [
+        0.395,
+        0.561
+      ],
+      "centroid_dist": 0.002,
+      "coarse_sim": 1.0,
+      "coarse_iou": 1.0,
+      "score": 0.933,
+      "diff_image": "diff_li-ion_charger-PTH-drl.png",
+      "side_by_side": "sbs_li-ion_charger-PTH-drl.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-pnp_bottom",
+      "kicad_file": "li-ion_charger-pnp_bottom.png",
+      "web_file": "li-ion_charger-pnp_bottom.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.015,
+      "web_content_pct": 0.019,
+      "iou": 0.4966,
+      "kicad_blobs": 156,
+      "web_blobs": 164,
+      "blob_count_diff": 8,
+      "kicad_blob_top5": [
+        47060,
+        1404,
+        1398,
+        1360,
+        1325
+      ],
+      "web_blob_top5": [
+        56388,
+        2736,
+        2608,
+        2508,
+        1984
+      ],
+      "area_hist_diff": 0.049,
+      "centroid_k": [
+        0.466,
+        0.523
+      ],
+      "centroid_w": [
+        0.465,
+        0.525
+      ],
+      "centroid_dist": 0.002,
+      "coarse_sim": 0.996,
+      "coarse_iou": 1.0,
+      "score": 0.599,
+      "diff_image": "diff_li-ion_charger-pnp_bottom.png",
+      "side_by_side": "sbs_li-ion_charger-pnp_bottom.png",
+      "status": "PASS"
+    },
+    {
+      "name": "li-ion_charger-pnp_top",
+      "kicad_file": "li-ion_charger-pnp_top.png",
+      "web_file": "li-ion_charger-pnp_top.png",
+      "kicad_orig_size": [
+        3797,
+        2052
+      ],
+      "web_orig_size": [
+        3418,
+        1850
+      ],
+      "kicad_content_pct": 0.045,
+      "web_content_pct": 0.058,
+      "iou": 0.5486,
+      "kicad_blobs": 722,
+      "web_blobs": 792,
+      "blob_count_diff": 70,
+      "kicad_blob_top5": [
+        47060,
+        5006,
+        4738,
+        3260,
+        3260
+      ],
+      "web_blob_top5": [
+        56388,
+        6656,
+        6258,
+        6000,
+        4560
+      ],
+      "area_hist_diff": 0.088,
+      "centroid_k": [
+        0.457,
+        0.5
+      ],
+      "centroid_w": [
+        0.457,
+        0.5
+      ],
+      "centroid_dist": 0.001,
+      "coarse_sim": 0.987,
+      "coarse_iou": 1.0,
+      "score": 0.595,
+      "diff_image": "diff_li-ion_charger-pnp_top.png",
+      "side_by_side": "sbs_li-ion_charger-pnp_top.png",
+      "status": "PASS"
+    }
+  ]
+}

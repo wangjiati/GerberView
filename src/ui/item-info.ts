@@ -4,7 +4,7 @@ import { ShapeType, Interpolation, ApertureType } from '../model/enums';
 import { GerberImage } from '../model/gerber-image';
 import { Point } from '../model/gerber-item';
 
-const SHAPE_NAMES: Record<number, string> = {
+const SHAPE_NAMES: Record<string, string> = {
   [ShapeType.Segment]: '线段',
   [ShapeType.Arc]: '圆弧',
   [ShapeType.Circle]: '圆形',
@@ -71,7 +71,7 @@ export function createItemDetailDialog(hit: HitResult, unit: 'mm' | 'inch' | 'mi
   html += row('形状类型', shape);
   if (item.dCode > 0) {
     html += row('D 代码', `D${item.dCode}`);
-    const dc = layer.getDCode(item.dCode);
+    const dc = layer.getDCcode(item.dCode);
     if (dc) {
       html += row('光圈类型', apertureTypeName(dc.apertureType));
       html += row('光圈尺寸', `${formatNm(dc.size.x, unit)} × ${formatNm(dc.size.y, unit)}`);

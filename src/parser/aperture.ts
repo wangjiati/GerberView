@@ -121,6 +121,7 @@ export class DCode {
   edgesCount: number = 0;         // 正多边形边数（3-12）
   defined: boolean = false;
   inUse: boolean = false;
+  aperFunction: string = '';      // 光圈功能（从 TA 命令获取）
 
   // 宏相关
   macro: ApertureMacro | null = null;

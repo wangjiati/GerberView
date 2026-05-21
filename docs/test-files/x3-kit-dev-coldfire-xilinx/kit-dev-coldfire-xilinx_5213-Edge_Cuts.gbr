@@ -1,0 +1,26 @@
+%TF.GenerationSoftware,KiCad,Pcbnew,8.99.0-344-gfbc433deaa-dirty*%
+%TF.CreationDate,2024-03-11T18:45:51+01:00*%
+%TF.ProjectId,kit-dev-coldfire-xilinx_5213,6b69742d-6465-4762-9d63-6f6c64666972,2*%
+%TF.SameCoordinates,Original*%
+%TF.FileFunction,Profile,NP*%
+%FSLAX46Y46*%
+G04 Gerber Fmt 4.6, Leading zero omitted, Abs format (unit mm)*
+G04 Created by KiCad (PCBNEW 8.99.0-344-gfbc433deaa-dirty) date 2024-03-11 18:45:51*
+%MOMM*%
+%LPD*%
+G01*
+G04 APERTURE LIST*
+%TA.AperFunction,Profile*%
+%ADD10C,0.381000*%
+%TD*%
+G04 APERTURE END LIST*
+D10*
+X71120000Y-147320000D02*
+X228600000Y-147320000D01*
+X71120000Y-55880000D02*
+X71120000Y-147320000D01*
+X228600000Y-55880000D02*
+X228600000Y-147320000D01*
+X228600000Y-55880000D02*
+X71120000Y-55880000D01*
+M02*

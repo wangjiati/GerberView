@@ -46,7 +46,7 @@ export class Viewport {
     this.center.y += dyPx * this.scale;
   }
 
-  fitBoundingBox(min: Point, max: Point, padding: number = 0.1) {
+  fitBoundingBox(min: Point, max: Point, padding: number = 0.02) {
     const worldW = max.x - min.x;
     const worldH = max.y - min.y;
     if (worldW <= 0 || worldH <= 0) return;
