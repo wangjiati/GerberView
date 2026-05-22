@@ -119,6 +119,9 @@ export class App {
   private measureMode: MeasureMode = MeasureMode.PointToPoint;
   private measureInProgress: Point[] = [];
   private shareMode: boolean = false;
+  private simulationActive: boolean = false;
+  private simulationFlip: boolean = false;
+  private savedFillState = { lines: true, flashes: true, polygons: true };
 
   constructor(container: HTMLElement, mode: 'share' | 'full' = 'full') {
     this.shareMode = mode === 'share';
@@ -191,6 +194,8 @@ export class App {
         { label: '显示网格', action: () => { this.displayOptions.showGrid = !this.displayOptions.showGrid; this.syncLeftToolbar(); this.requestRender(); }, checked: () => this.displayOptions.showGrid },
         { type: 'separator' as const },
         { label: '高对比度模式', action: () => { this.displayOptions.highContrastMode = !this.displayOptions.highContrastMode; this.syncLeftToolbar(); this.requestRender(); }, checked: () => this.displayOptions.highContrastMode },
+        { type: 'separator' as const },
+        { label: '仿真视图', action: () => { this.toggleSimulation(!this.simulationActive); }, checked: () => this.simulationActive },
       ]},
       { label: '图层', items: [
         { label: '按扩展名排序', action: () => this.sortLayers() },
@@ -357,6 +362,9 @@ export class App {
     tb.appendChild(sep(true));
     tb.appendChild(this.ltBtn('layerMgr', ICONS.showLayers, '显示/隐藏图层面板\n快捷键: L', true));
     tb.appendChild(this.ltBtn('mirror', ICONS.mirror, '镜像视图\n水平翻转整个画布内容', false));
+    tb.appendChild(sep(true));
+    tb.appendChild(this.ltBtn('simulation', ICONS.contrast, '仿真视图\n近似真实 PCB 外观\n快捷键: Ctrl+Shift+S', false));
+    tb.appendChild(this.ltBtn('simFlip', ICONS.mirror, '仿真翻转\n翻转查看 PCB 底层\n仅在仿真模式下可用', false));
 
     // 可展开面板
     const panel = document.createElement('div');
@@ -558,6 +566,8 @@ export class App {
       case 'diff': this.displayOptions.xorMode = active; break;
       case 'layerMgr': this.layerPanelVisible = active; this.layerPanelEl.classList.toggle('hidden', !active); break;
       case 'mirror': this.displayOptions.mirror = active; break;
+      case 'simulation': this.toggleSimulation(active); break;
+      case 'simFlip': this.toggleSimFlip(); break;
     }
     this.requestRender();
   }
@@ -574,6 +584,8 @@ export class App {
     set('diff', this.displayOptions.xorMode);
     set('layerMgr', this.layerPanelVisible);
     set('mirror', this.displayOptions.mirror);
+    set('simulation', this.simulationActive);
+    set('simFlip', this.simulationFlip);
   }
 
   private createLayerPanel(): HTMLElement {
@@ -714,7 +726,7 @@ export class App {
     this.canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
       const rect = this.canvas.getBoundingClientRect();
-      this.viewport.zoom(e.deltaY > 0 ? 1 / 1.2 : 1.2, { x: e.clientX - rect.left, y: e.clientY - rect.top });
+      this.viewport.zoom(e.deltaY > 0 ? 1 / 1.2 : 1.2, this.msp({ x: e.clientX - rect.left, y: e.clientY - rect.top }));
       this.requestRender();
     }, { passive: false });
 
@@ -741,12 +753,12 @@ export class App {
 
       // 测量模式下更新捕捉
       if (this.measureActive) {
-        this.currentSnap = this.findSnapPoint(sp);
+        this.currentSnap = this.findSnapPoint(this.msp(sp));
       }
 
       // 悬停 tooltip（非测量模式）
       if (!this.measureActive && !this.isPanning) {
-        const hit = hitTest(sp, this.layerManager, this.viewport);
+        const hit = hitTest(this.msp(sp), this.layerManager, this.viewport);
         if (hit !== this.hoveredItem) {
           this.hoveredItem = hit;
           this.updateItemTooltip(e.clientX, e.clientY);
@@ -756,10 +768,12 @@ export class App {
         }
       }
 
-      this.updateCoordDisplay(sp);
+      this.updateCoordDisplay(this.msp(sp));
 
       if (this.isPanning) {
-        this.viewport.pan(e.clientX - this.lastMousePos.x, e.clientY - this.lastMousePos.y);
+        let dx = e.clientX - this.lastMousePos.x;
+        if (this.displayOptions.mirror) dx = -dx;
+        this.viewport.pan(dx, e.clientY - this.lastMousePos.y);
         this.lastMousePos = { x: e.clientX, y: e.clientY };
         this.requestRender();
       } else if (this.zoomAreaActive && this.zoomAreaStart) {
@@ -776,7 +790,7 @@ export class App {
       const sp = { x: e.clientX - rect.left, y: e.clientY - rect.top };
 
       if (this.measureActive) {
-        const wp = this.currentSnap?.world ?? this.viewport.screenToWorld(sp);
+        const wp = this.currentSnap?.world ?? this.viewport.screenToWorld(this.msp(sp));
         this.measureInProgress.push(wp);
         this.measureStart = wp;
 
@@ -799,7 +813,7 @@ export class App {
           }
         } else if (mode === MeasureMode.Radius) {
           if (pts.length === 1) {
-            const hit = hitTest(sp, this.layerManager, this.viewport);
+            const hit = hitTest(this.msp(sp), this.layerManager, this.viewport);
             let radius = 0;
             if (hit && (hit.item.shapeType === ShapeType.Arc || hit.item.shapeType === ShapeType.Circle || hit.item.shapeType === ShapeType.SpotCircle)) {
               const dx = hit.item.start.x - hit.item.arcCenter.x;
@@ -821,7 +835,7 @@ export class App {
       }
 
       // 选择工具：命中测试
-      const hit = hitTest(sp, this.layerManager, this.viewport);
+      const hit = hitTest(this.msp(sp), this.layerManager, this.viewport);
       this.selectedItem = hit;
       this.requestRender();
     });
@@ -847,7 +861,7 @@ export class App {
       }
 
       if (this.measureActive) return;
-      const hit = hitTest(sp, this.layerManager, this.viewport);
+      const hit = hitTest(this.msp(sp), this.layerManager, this.viewport);
       if (hit) {
         const dialog = createItemDetailDialog(hit, this.unitMode);
         document.body.appendChild(dialog);
@@ -862,8 +876,8 @@ export class App {
         if (dx > 5 && dy > 5) {
           const x1 = Math.min(s.x, en.x), y1 = Math.min(s.y, en.y);
           const x2 = Math.max(s.x, en.x), y2 = Math.max(s.y, en.y);
-          const w1 = this.viewport.screenToWorld({ x: x1, y: y1 });
-          const w2 = this.viewport.screenToWorld({ x: x2, y: y2 });
+          const w1 = this.viewport.screenToWorld(this.msp({ x: x1, y: y1 }));
+          const w2 = this.viewport.screenToWorld(this.msp({ x: x2, y: y2 }));
           this.viewport.fitBoundingBox(pt(w1.x, w2.y), pt(w2.x, w1.y), 0.05);
           this.requestRender();
         }
@@ -914,6 +928,7 @@ export class App {
       else if (key === 'l') { this.displayOptions.linesFill = !this.displayOptions.linesFill; this.syncLeftToolbar(); this.requestRender(); }
       else if (key === 'p') { this.displayOptions.polygonsFill = !this.displayOptions.polygonsFill; this.syncLeftToolbar(); this.requestRender(); }
       else if (key === 'd') { this.displayOptions.showDcodes = !this.displayOptions.showDcodes; this.syncLeftToolbar(); this.requestRender(); }
+      else if (key === 'S' && e.ctrlKey && e.shiftKey) { e.preventDefault(); this.toggleSimulation(!this.simulationActive); }
       else if (key === 'PageDown') { this.switchActiveLayer(1); }
       else if (key === 'PageUp') { this.switchActiveLayer(-1); }
     });
@@ -926,6 +941,12 @@ export class App {
         if (e.dataTransfer?.files) this.loadFiles(Array.from(e.dataTransfer.files));
       });
     }
+  }
+
+  /** Mirror-aware screen point: flip X when canvas is mirrored */
+  private msp(sp: Point): Point {
+    if (this.displayOptions.mirror) return { x: this.viewport.canvasWidth - sp.x, y: sp.y };
+    return sp;
   }
 
   private switchActiveLayer(dir: number) {
@@ -1008,7 +1029,12 @@ export class App {
   private drawItemHighlight(ctx: CanvasRenderingContext2D, hit: HitResult, color: string, lineW: number) {
     const { item, layer } = hit;
     const vp = this.viewport;
-    const tp = (p: Point) => vp.worldToScreen(transformPointWorld(item, layer, p));
+    const mirror = this.displayOptions.mirror;
+    const w = vp.canvasWidth;
+    const tp = (p: Point): Point => {
+      const s = vp.worldToScreen(transformPointWorld(item, layer, p));
+      return mirror ? { x: w - s.x, y: s.y } : s;
+    };
 
     ctx.save();
     ctx.strokeStyle = color;
@@ -1189,7 +1215,7 @@ export class App {
     if (this.measureActive) {
       let cursorWorld: Point | null = null;
       if (this.currentSnap) cursorWorld = this.currentSnap.world;
-      else if (inCanvas) cursorWorld = this.viewport.screenToWorld(sp);
+      else if (inCanvas) cursorWorld = this.viewport.screenToWorld(this.msp(sp));
 
       renderMeasurements(ctx, this.viewport, this.measureMgr, this.unitMode,
         this.measureMode, this.measureInProgress, cursorWorld);
@@ -1732,6 +1758,9 @@ export class App {
       { label: '差异模式', action: () => { this.displayOptions.xorMode = !this.displayOptions.xorMode; this.syncLeftToolbar(); this.requestRender(); }, checked: this.displayOptions.xorMode },
       { label: '镜像视图', action: () => { this.displayOptions.mirror = !this.displayOptions.mirror; this.syncLeftToolbar(); this.requestRender(); }, checked: this.displayOptions.mirror },
       { separator: true, label: '' },
+      { label: '仿真视图', action: () => { this.toggleSimulation(!this.simulationActive); }, checked: this.simulationActive },
+      { label: '仿真翻转', action: () => { this.toggleSimFlip(); } },
+      { separator: true, label: '' },
       { label: '导出 PNG...', action: () => this.exportPNG() },
       { label: '导出 SVG...', action: () => this.exportSVG() },
       { label: '导出 DXF...', action: () => this.exportDXF() },
@@ -1793,6 +1822,57 @@ export class App {
     this.populateX2Selectors();
     this.updateFileInfo();
     this.zoomFit();
+  }
+
+  private toggleSimulation(active: boolean) {
+    this.simulationActive = active;
+    this.simulationFlip = false;
+    if (active) {
+      this.savedFillState = {
+        lines: this.displayOptions.linesFill,
+        flashes: this.displayOptions.flashesFill,
+        polygons: this.displayOptions.polygonsFill,
+      };
+      this.displayOptions.linesFill = true;
+      this.displayOptions.flashesFill = true;
+      this.displayOptions.polygonsFill = true;
+      this.displayOptions.simulationMode = true;
+      // 默认显示顶层视图：隐藏底层图层
+      this.setSimulationSide(false);
+    } else {
+      this.displayOptions.linesFill = this.savedFillState.lines;
+      this.displayOptions.flashesFill = this.savedFillState.flashes;
+      this.displayOptions.polygonsFill = this.savedFillState.polygons;
+      this.displayOptions.simulationMode = false;
+      this.displayOptions.mirror = false;
+    }
+    this.syncLeftToolbar();
+    this.updateLayerPanel();
+    this.requestRender();
+  }
+
+  private toggleSimFlip() {
+    if (!this.simulationActive) return;
+    this.simulationFlip = !this.simulationFlip;
+    this.displayOptions.mirror = this.simulationFlip;
+    this.setSimulationSide(this.simulationFlip);
+    this.syncLeftToolbar();
+    this.updateLayerPanel();
+    this.requestRender();
+  }
+
+  private setSimulationSide(isBottom: boolean) {
+    const bottomTypes = new Set(['bottomCopper', 'bottomSolderMask', 'bottomSilkscreen', 'bottomPaste']);
+    const topTypes = new Set(['topCopper', 'topSolderMask', 'topSilkscreen', 'topPaste']);
+    const hideTypes = isBottom ? topTypes : bottomTypes;
+    for (const layer of this.layerManager.layers) {
+      if (!layer) continue;
+      if (hideTypes.has(layer.layerType)) {
+        layer.visible = false;
+      } else {
+        layer.visible = true;
+      }
+    }
   }
 
   private async exportShareHTML() {

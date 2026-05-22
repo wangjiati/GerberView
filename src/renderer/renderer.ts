@@ -28,6 +28,7 @@ export interface DisplayOptions {
   backgroundColor: string;
   dcodeLabelColor: string;
   axesColor: string;
+  simulationMode: boolean;
 }
 
 export const DEFAULT_DISPLAY_OPTIONS: DisplayOptions = {
@@ -52,6 +53,7 @@ export const DEFAULT_DISPLAY_OPTIONS: DisplayOptions = {
   backgroundColor: '#000000',
   dcodeLabelColor: '#ffff00',
   axesColor: '#0000ff',
+  simulationMode: false,
 };
 
 interface MacroShape { points: Point[]; exposure: boolean; }
@@ -83,7 +85,8 @@ export class Renderer {
     }
     this.offCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-    ctx.fillStyle = this.displayOptions.backgroundColor || '#000000';
+    const sim = this.displayOptions.simulationMode;
+    ctx.fillStyle = sim ? '#1a472a' : (this.displayOptions.backgroundColor || '#000000');
     ctx.fillRect(0, 0, w, h);
 
     if (this.displayOptions.mirror) {
@@ -111,6 +114,20 @@ export class Renderer {
         } else if (this.displayOptions.opacityMode) {
           alpha = this.displayOptions.opacityAlpha * layer.opacity;
         }
+
+        if (sim) {
+          const simStyle = this.getSimulationStyle(layer);
+          if (simStyle) {
+            const origColor = layer.color;
+            const origOpacity = layer.opacity;
+            layer.color = simStyle.color;
+            alpha = simStyle.alpha;
+            this.renderLayerNormal(layer, alpha);
+            layer.color = origColor;
+            continue;
+          }
+        }
+
         this.renderLayerNormal(layer, alpha);
       }
     }
@@ -146,6 +163,32 @@ export class Renderer {
       if (l && l.visible) return i === layerIdx;
     }
     return false;
+  }
+
+  private getSimulationStyle(layer: GerberImage): { color: string; alpha: number } | null {
+    const lt = layer.layerType;
+    switch (lt) {
+      case 'topCopper':
+      case 'bottomCopper':
+        return { color: '#b87333', alpha: 1.0 };
+      case 'innerCopper':
+        return { color: '#b87333', alpha: 0.3 };
+      case 'topSolderMask':
+      case 'bottomSolderMask':
+        return { color: '#007832', alpha: 0.72 };
+      case 'topSilkscreen':
+      case 'bottomSilkscreen':
+        return { color: '#f0f0f0', alpha: 1.0 };
+      case 'topPaste':
+      case 'bottomPaste':
+        return { color: '#c0c0c0', alpha: 0.9 };
+      case 'edgeCuts':
+        return { color: '#daa520', alpha: 1.0 };
+      case 'drill':
+        return { color: '#1a1a1a', alpha: 1.0 };
+      default:
+        return null;
+    }
   }
 
   // 合成离屏 canvas 到主 canvas，保留镜像变换
