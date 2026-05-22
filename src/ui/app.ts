@@ -15,6 +15,7 @@ import { exportToSVG, downloadSVG } from '../tools/exporter-svg';
 import { exportToDXF, downloadDXF } from '../tools/exporter-dxf';
 import { MeasurementManager, MeasureMode, Measurement, computeDistance, computeAngleDeg, computePolygonArea, formatNm, renderMeasurements } from '../tools/measurement';
 import { runDfmAnalysis, formatDfmValue, DfmReport } from '../tools/dfm-analysis';
+import { loadShareData, generateShareHTML, downloadShareHTML } from '../tools/share';
 
 export type UnitMode = 'mm' | 'inch' | 'mil';
 
@@ -117,8 +118,10 @@ export class App {
   private measureMgr = new MeasurementManager();
   private measureMode: MeasureMode = MeasureMode.PointToPoint;
   private measureInProgress: Point[] = [];
+  private shareMode: boolean = false;
 
-  constructor(container: HTMLElement) {
+  constructor(container: HTMLElement, mode: 'share' | 'full' = 'full') {
+    this.shareMode = mode === 'share';
     this.buildUI(container);
     this.initRenderer();
     this.applyTheme();
@@ -130,7 +133,7 @@ export class App {
 
   private buildUI(container: HTMLElement) {
     container.innerHTML = '';
-    container.className = 'gerbview-app';
+    container.className = 'gerberview-app';
     container.appendChild(this.createMenuBar());
     container.appendChild(this.createTopToolbar());
     const mainArea = document.createElement('div');
@@ -156,18 +159,30 @@ export class App {
   private createMenuBar(): HTMLElement {
     const menu = document.createElement('div');
     menu.className = 'menu-bar';
-    const menus = [
-      { label: '文件', items: [
+    const fileItems: any[] = [];
+    if (!this.shareMode) {
+      fileItems.push(
         { label: '自动检测并打开文件...', action: () => this.openFiles('all') },
         { label: '打开 Gerber 文件...', action: () => this.openFiles('gerber') },
         { label: '打开钻孔文件...', action: () => this.openFiles('excellon') },
         { type: 'separator' as const },
         { label: '清除所有图层', action: () => this.clearAll() },
         { type: 'separator' as const },
-        { label: '导出为 PNG...', action: () => this.exportPNG() },
-        { label: '导出为 SVG...', action: () => this.exportSVG() },
-        { label: '导出为 DXF...', action: () => this.exportDXF() },
-      ]},
+      );
+    }
+    fileItems.push(
+      { label: '导出为 PNG...', action: () => this.exportPNG() },
+      { label: '导出为 SVG...', action: () => this.exportSVG() },
+      { label: '导出为 DXF...', action: () => this.exportDXF() },
+    );
+    if (!this.shareMode) {
+      fileItems.push(
+        { type: 'separator' as const },
+        { label: '分享为只读模式...', action: () => this.exportShareHTML() },
+      );
+    }
+    const menus = [
+      { label: '文件', items: fileItems },
       { label: '视图', items: [
         { label: '适应窗口', action: () => this.zoomFit() },
         { label: '放大', action: () => { this.viewport.zoom(1.5); this.requestRender(); } },
@@ -191,7 +206,7 @@ export class App {
       { label: '帮助', items: [
         { label: '快捷键参考', action: () => this.showShortcutsDialog() },
         { type: 'separator' as const },
-        { label: '关于 GerbView', action: () => this.showAboutDialog() },
+        { label: '关于 GerberView', action: () => this.showAboutDialog() },
       ]},
     ];
 
@@ -232,11 +247,13 @@ export class App {
   private createTopToolbar(): HTMLElement {
     const tb = document.createElement('div');
     tb.className = 'top-toolbar';
-    tb.appendChild(this.tbBtn(ICONS.clearAll, '清除所有图层', () => this.clearAll()));
-    tb.appendChild(sep());
-    tb.appendChild(this.tbBtn(ICONS.openFile, '打开 Gerber 文件', () => this.openFiles('gerber')));
-    tb.appendChild(this.tbBtn(ICONS.openDrill, '打开钻孔文件', () => this.openFiles('excellon')));
-    tb.appendChild(sep());
+    if (!this.shareMode) {
+      tb.appendChild(this.tbBtn(ICONS.clearAll, '清除所有图层', () => this.clearAll()));
+      tb.appendChild(sep());
+      tb.appendChild(this.tbBtn(ICONS.openFile, '打开 Gerber 文件', () => this.openFiles('gerber')));
+      tb.appendChild(this.tbBtn(ICONS.openDrill, '打开钻孔文件', () => this.openFiles('excellon')));
+      tb.appendChild(sep());
+    }
     tb.appendChild(this.tbBtn(ICONS.print, '导出 PNG', () => this.exportPNG()));
     tb.appendChild(this.tbBtn(ICONS.redraw, '重绘', () => this.requestRender()));
     tb.appendChild(sep());
@@ -620,10 +637,27 @@ export class App {
 
   private createStatusBar(): HTMLElement {
     const bar = document.createElement('div'); bar.className = 'status-bar';
+    if (this.shareMode) {
+      const badge = document.createElement('span');
+      badge.className = 'status-item share-badge';
+      badge.textContent = '[分享]';
+      badge.style.color = 'var(--accent)';
+      badge.style.fontWeight = 'bold';
+      bar.appendChild(badge);
+    }
     this.coordDisplayEl = document.createElement('span'); this.coordDisplayEl.className = 'status-item';
     this.zoomDisplayEl = document.createElement('span'); this.zoomDisplayEl.className = 'status-item';
     this.fileInfoEl = document.createElement('span'); this.fileInfoEl.className = 'status-item status-info';
     bar.appendChild(this.coordDisplayEl); bar.appendChild(this.zoomDisplayEl); bar.appendChild(this.fileInfoEl);
+    if (this.shareMode) {
+      const ro = document.createElement('span');
+      ro.className = 'status-item';
+      ro.textContent = '只读模式';
+      ro.style.marginLeft = 'auto';
+      ro.style.color = 'white';
+      ro.style.fontWeight = 'bold';
+      bar.appendChild(ro);
+    }
     return bar;
   }
 
@@ -884,12 +918,14 @@ export class App {
       else if (key === 'PageUp') { this.switchActiveLayer(-1); }
     });
 
-    this.canvas.addEventListener('dragover', (e) => { e.preventDefault(); this.canvas.parentElement!.classList.add('drag-over'); });
-    this.canvas.addEventListener('dragleave', () => { this.canvas.parentElement!.classList.remove('drag-over'); });
-    this.canvas.addEventListener('drop', (e) => {
-      e.preventDefault(); this.canvas.parentElement!.classList.remove('drag-over');
-      if (e.dataTransfer?.files) this.loadFiles(Array.from(e.dataTransfer.files));
-    });
+    if (!this.shareMode) {
+      this.canvas.addEventListener('dragover', (e) => { e.preventDefault(); this.canvas.parentElement!.classList.add('drag-over'); });
+      this.canvas.addEventListener('dragleave', () => { this.canvas.parentElement!.classList.remove('drag-over'); });
+      this.canvas.addEventListener('drop', (e) => {
+        e.preventDefault(); this.canvas.parentElement!.classList.remove('drag-over');
+        if (e.dataTransfer?.files) this.loadFiles(Array.from(e.dataTransfer.files));
+      });
+    }
   }
 
   private switchActiveLayer(dir: number) {
@@ -1209,12 +1245,12 @@ export class App {
   private updateFileInfo() {
     const idx = this.displayOptions.activeLayer;
     if (idx < 0) {
-      this.fileInfoEl.textContent = 'GerbView';
+      this.fileInfoEl.textContent = 'GerberView';
       return;
     }
     const layer = this.layerManager.getLayer(idx);
     if (!layer) {
-      this.fileInfoEl.textContent = 'GerbView';
+      this.fileInfoEl.textContent = 'GerberView';
       return;
     }
     const parts: string[] = [layer.fileName || `图层 ${idx}`];
@@ -1279,6 +1315,15 @@ export class App {
           image = new GerberParser().parse(text, fileName, layerIndex);
         }
         this.layerManager.addLayer(image);
+        // 自动识别图层类型并着色
+        const lt = this.detectLayerType(fileName, image.fileFunction);
+        image.layerType = lt;
+        if (LAYER_TYPE_COLORS[lt]) {
+          image.color = LAYER_TYPE_COLORS[lt];
+        }
+        if (image.layerName === '' && lt !== LayerType.Unknown) {
+          image.layerName = LAYER_TYPE_LABELS[lt];
+        }
       }
     } catch (err) {
       console.error('ZIP 解压失败:', err);
@@ -1721,7 +1766,7 @@ export class App {
 
   private exportPNG() {
     const link = document.createElement('a');
-    link.download = 'gerbview-export.png';
+    link.download = 'gerberview-export.png';
     link.href = this.canvas.toDataURL('image/png');
     link.click();
   }
@@ -1734,6 +1779,34 @@ export class App {
   private exportDXF() {
     const dxf = exportToDXF(this.layerManager);
     if (dxf) downloadDXF(dxf);
+  }
+
+  async loadEmbeddedData() {
+    const lm = await loadShareData();
+    if (!lm) return;
+    this.layerManager = lm;
+    this.renderer = new Renderer(this.ctx, this.viewport, this.layerManager);
+    this.renderer.displayOptions = this.displayOptions;
+    this.resizeCanvas();
+    this.updateLayerPanel();
+    this.updateActiveLayerSelect();
+    this.populateX2Selectors();
+    this.updateFileInfo();
+    this.zoomFit();
+  }
+
+  private async exportShareHTML() {
+    if (this.layerManager.getLoadedCount() === 0) {
+      alert('请先加载 Gerber 文件再导出分享 HTML。');
+      return;
+    }
+    try {
+      const blob = await generateShareHTML(this.layerManager);
+      downloadShareHTML(blob);
+    } catch (err) {
+      console.error('导出分享 HTML 失败:', err);
+      alert('导出失败: ' + (err instanceof Error ? err.message : String(err)));
+    }
   }
 
   private showDfmReport() {
@@ -1776,9 +1849,9 @@ export class App {
     dialog.className = 'dialog';
     dialog.style.maxWidth = '420px';
     dialog.innerHTML = `
-      <div class="dialog-title">关于 GerbView</div>
+      <div class="dialog-title">关于 GerberView</div>
       <div style="padding:4px 0 12px;font-size:13px;line-height:1.8;color:var(--text-primary);">
-        <div style="font-size:16px;font-weight:bold;margin-bottom:8px;">GerbView Web</div>
+        <div style="font-size:16px;font-weight:bold;margin-bottom:8px;">GerberView Web${this.shareMode ? ' <span style="color:var(--accent);">[只读分享]</span>' : ''}</div>
         <div>基于 Web 技术的 Gerber 文件查看器</div>
         <div style="margin-top:8px;color:var(--text-secondary);font-size:12px;">
           <div>支持 Gerber RS-274X (X2) 和 Excellon 钻孔文件格式</div>
@@ -1789,14 +1862,14 @@ export class App {
         <div style="margin-top:12px;color:var(--text-dim);font-size:11px;">
           从 KiCad GerbView 源码转写的 Web 版本<br>
           使用 TypeScript + Canvas2D 实现<br>
-          <a href="https://github.com/wangjiati/GerbView" target="_blank" style="color:var(--accent);text-decoration:none;">https://github.com/wangjiati/GerbView</a>
+          <a href="https://github.com/wangjiati/GerberView" target="_blank" style="color:var(--accent);text-decoration:none;">https://github.com/wangjiati/GerberView</a>
         </div>
       </div>
       <div class="dialog-btn-row">
         <button class="dialog-btn primary" id="about-close">确定</button>
       </div>`;
     overlay.appendChild(dialog);
-    document.querySelector('.gerbview-app')!.appendChild(overlay);
+    document.querySelector('.gerberview-app')!.appendChild(overlay);
     overlay.querySelector('#about-close')!.addEventListener('click', () => overlay.remove());
     overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
   }
@@ -1836,7 +1909,7 @@ export class App {
         <button class="dialog-btn primary" id="shortcuts-close">关闭</button>
       </div>`;
     overlay.appendChild(dialog);
-    document.querySelector('.gerbview-app')!.appendChild(overlay);
+    document.querySelector('.gerberview-app')!.appendChild(overlay);
     overlay.querySelector('#shortcuts-close')!.addEventListener('click', () => overlay.remove());
     overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
   }
@@ -1932,7 +2005,7 @@ export class App {
     dialog.appendChild(btnRow);
 
     overlay.appendChild(dialog);
-    document.querySelector('.gerbview-app')!.appendChild(overlay);
+    document.querySelector('.gerberview-app')!.appendChild(overlay);
 
     const close = () => overlay.remove();
     cancelBtn.addEventListener('click', () => {
@@ -2020,7 +2093,7 @@ export class App {
     dialog.appendChild(btnRow);
 
     overlay.appendChild(dialog);
-    document.querySelector('.gerbview-app')!.appendChild(overlay);
+    document.querySelector('.gerberview-app')!.appendChild(overlay);
 
     const close = () => overlay.remove();
     cancelBtn.addEventListener('click', close);

@@ -1,4 +1,4 @@
-# GerbView Web
+# GerberView Web
 
 基于 Web 技术的 Gerber 文件查看器，从 KiCad GerbView 源码转写，使用 TypeScript + Canvas2D 实现。
 
@@ -16,7 +16,7 @@
 
 ## 在线使用
 
-[GitHub Pages](https://wangjiati.github.io/GerbView/)
+[GitHub Pages](https://wangjiati.github.io/GerberView/)
 
 ## 本地开发
 

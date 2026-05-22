@@ -38,7 +38,7 @@ html, body {
   background: var(--bg-tertiary);
 }
 
-.gerbview-app {
+.gerberview-app {
   display: flex;
   flex-direction: column;
   width: 100%;
