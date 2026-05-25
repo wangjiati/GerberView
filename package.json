@@ -14,6 +14,7 @@
     "vite-plugin-singlefile": "^0.13.0"
   },
   "dependencies": {
-    "jszip": "^3.10.1"
+    "jszip": "^3.10.1",
+    "polygon-clipping": "^0.15.7"
   }
 }

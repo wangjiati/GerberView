@@ -4,7 +4,7 @@ import { Renderer, DisplayOptions, DEFAULT_DISPLAY_OPTIONS } from '../renderer/r
 import { LayerManager, GerberImage } from '../model/gerber-image';
 import { GerberParser, detectGerberFile, KICAD_LAYER_COLORS } from '../parser/gerber-parser';
 import { ExcellonParser, detectExcellonFile } from '../parser/excellon-parser';
-import { IU_PER_MM, ShapeType, LayerType, LAYER_TYPE_COLORS, LAYER_TYPE_LABELS } from '../model/enums';
+import { IU_PER_MM, ShapeType, LayerType, LAYER_TYPE_COLORS, LAYER_TYPE_LABELS, MAX_LAYERS, LAYER_CATEGORIES } from '../model/enums';
 import { Point, pt, GerberItem } from '../model/gerber-item';
 import { ThemeColors, PRESET_THEMES, loadTheme, saveTheme, applyThemeToGridConfig } from './theme';
 import { hitTest, HitResult } from '../tools/hit-test';
@@ -13,6 +13,7 @@ import { transformPointWorld } from '../tools/transform';
 import { Interpolation } from '../model/enums';
 import { exportToSVG, downloadSVG } from '../tools/exporter-svg';
 import { exportToDXF, downloadDXF } from '../tools/exporter-dxf';
+import { showExportDxfDialog } from './export-dxf-dialog';
 import { MeasurementManager, MeasureMode, Measurement, computeDistance, computeAngleDeg, computePolygonArea, formatNm, renderMeasurements } from '../tools/measurement';
 import { runDfmAnalysis, formatDfmValue, DfmReport } from '../tools/dfm-analysis';
 import { loadShareData, generateShareHTML, downloadShareHTML } from '../tools/share';
@@ -1466,158 +1467,267 @@ export class App {
 
   // ========== 图层面板 ==========
 
+  /** 创建单个图层行 */
+  private createLayerRow(i: number, layer: GerberImage): HTMLElement {
+    const row = document.createElement('div');
+    row.className = 'layer-row' + (this.displayOptions.activeLayer === i ? ' active-layer' : '');
+    row.draggable = true;
+    row.dataset.layerIndex = String(i);
+    row.addEventListener('dragstart', (e) => {
+      e.dataTransfer!.setData('text/plain', String(i));
+      row.style.opacity = '0.5';
+    });
+    row.addEventListener('dragend', () => { row.style.opacity = ''; row.classList.remove('drag-over-top', 'drag-over-bottom'); });
+    row.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const rect = row.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      row.classList.remove('drag-over-top', 'drag-over-bottom');
+      if (e.clientY < midY) row.classList.add('drag-over-top');
+      else row.classList.add('drag-over-bottom');
+    });
+    row.addEventListener('dragleave', () => { row.classList.remove('drag-over-top', 'drag-over-bottom'); });
+    row.addEventListener('drop', (e) => {
+      e.preventDefault();
+      row.classList.remove('drag-over-top', 'drag-over-bottom');
+      const fromIdx = parseInt(e.dataTransfer!.getData('text/plain'));
+      if (isNaN(fromIdx) || fromIdx === i) return;
+      // 跨分类拖拽时自动设置 displayCategory，让图层跟随目标分类
+      const fromLayer = this.layerManager.getLayer(fromIdx);
+      if (fromLayer) {
+        const srcCat = fromLayer.displayCategory || LAYER_CATEGORIES.find(c => c.types.includes(fromLayer.layerType))?.label;
+        const dstCat = layer.displayCategory || LAYER_CATEGORIES.find(c => c.types.includes(layer.layerType))?.label;
+        if (dstCat && srcCat !== dstCat) fromLayer.displayCategory = dstCat;
+      }
+      const rect = row.getBoundingClientRect();
+      const insertBefore = e.clientY < (rect.top + rect.height / 2);
+      this.moveLayerTo(fromIdx, i, insertBefore);
+      this.updateLayerPanel();
+      this.updateActiveLayerSelect();
+      this.requestRender();
+    });
+
+    const arrow = document.createElement('span');
+    arrow.className = 'active-arrow' + (this.displayOptions.activeLayer === i ? '' : ' hidden');
+    arrow.textContent = '▶';
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.className = 'layer-checkbox'; cb.checked = layer.visible;
+    cb.addEventListener('change', (e) => { e.stopPropagation(); layer.visible = cb.checked; this.requestRender(); });
+
+    const swatch = document.createElement('div');
+    swatch.className = 'layer-color-swatch';
+    swatch.style.backgroundColor = layer.color;
+    swatch.addEventListener('click', (e) => { e.stopPropagation(); this.showLayerColorDialog(layer, swatch); });
+
+    const name = document.createElement('span');
+    name.className = 'layer-name-text';
+    const displayName = layer.layerName || `图层 ${i}`;
+    const fileName = layer.fileName || '';
+    name.textContent = displayName !== fileName ? `${displayName}(${fileName})` : displayName;
+    name.title = fileName || displayName;
+
+    const typeSelect = document.createElement('select');
+    typeSelect.className = 'layer-type-select';
+    for (const lt of Object.values(LayerType)) {
+      const opt = document.createElement('option');
+      opt.value = lt; opt.textContent = LAYER_TYPE_LABELS[lt];
+      if (layer.layerType === lt) opt.selected = true;
+      typeSelect.appendChild(opt);
+    }
+    typeSelect.addEventListener('change', () => {
+      const newType = typeSelect.value as LayerType;
+      layer.layerType = newType;
+      layer.displayCategory = null; // 手动改类型后回到自然分类
+      if (LAYER_TYPE_COLORS[newType]) layer.color = LAYER_TYPE_COLORS[newType];
+      if (newType !== LayerType.Unknown && LAYER_TYPE_LABELS[newType]) layer.layerName = LAYER_TYPE_LABELS[newType];
+      this.updateLayerPanel();
+      this.requestRender();
+    });
+
+    const del = document.createElement('button');
+    del.className = 'layer-del'; del.textContent = '✕';
+    del.addEventListener('click', (e) => {
+      e.stopPropagation(); this.layerManager.removeLayer(i);
+      this.updateLayerPanel(); this.updateActiveLayerSelect(); this.requestRender();
+    });
+
+    const opacityWrap = document.createElement('div');
+    opacityWrap.className = 'layer-opacity-wrap';
+    const opacitySlider = document.createElement('input');
+    opacitySlider.type = 'range'; opacitySlider.min = '0'; opacitySlider.max = '100';
+    opacitySlider.value = String(Math.round(layer.opacity * 100));
+    opacitySlider.className = 'layer-opacity-slider';
+    const opacityInput = document.createElement('input');
+    opacityInput.type = 'number'; opacityInput.min = '0'; opacityInput.max = '100';
+    opacityInput.value = String(Math.round(layer.opacity * 100));
+    opacityInput.className = 'layer-opacity-input';
+    opacityInput.title = '透明度 %';
+
+    const syncOpacity = (val: number) => {
+      val = Math.max(0, Math.min(100, val));
+      layer.opacity = val / 100;
+      opacitySlider.value = String(val);
+      opacityInput.value = String(val);
+      this.requestRender();
+    };
+    opacitySlider.addEventListener('input', (e) => { e.stopPropagation(); syncOpacity(parseInt(opacitySlider.value)); });
+    opacityInput.addEventListener('input', (e) => { e.stopPropagation(); const v = parseInt(opacityInput.value); if (!isNaN(v)) syncOpacity(v); });
+    opacitySlider.addEventListener('click', (e) => e.stopPropagation());
+    opacityInput.addEventListener('click', (e) => e.stopPropagation());
+
+    opacityWrap.appendChild(opacitySlider);
+    opacityWrap.appendChild(opacityInput);
+
+    row.appendChild(arrow); row.appendChild(cb); row.appendChild(swatch); row.appendChild(name); row.appendChild(typeSelect);
+    row.appendChild(opacityWrap);
+    row.appendChild(del);
+
+    row.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'BUTTON' || (e.target as HTMLElement).tagName === 'SELECT') return;
+      this.displayOptions.activeLayer = i;
+      this.activeLayerSelect.value = String(i);
+      this.updateLayerPanel(); this.updateFileInfo(); this.requestRender();
+    });
+    row.addEventListener('contextmenu', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      this.showLayerContextMenu(e.clientX, e.clientY, i, layer, swatch);
+    });
+    row.addEventListener('dblclick', (e) => {
+      e.preventDefault(); e.stopPropagation();
+      this.showLayerContextMenu(row.getBoundingClientRect().right, row.getBoundingClientRect().top, i, layer, swatch);
+    });
+    return row;
+  }
+
   private updateLayerPanel() {
     this.layerListEl.innerHTML = '';
-    for (let i = 0; i < 32; i++) {
+
+    // 收集已加载图层
+    const loadedLayers: { index: number; layer: GerberImage }[] = [];
+    for (let i = 0; i < MAX_LAYERS; i++) {
       const layer = this.layerManager.getLayer(i);
-      if (!layer) continue;
+      if (layer) loadedLayers.push({ index: i, layer });
+    }
+    if (loadedLayers.length === 0) return;
 
-      const row = document.createElement('div');
-      row.className = 'layer-row' + (this.displayOptions.activeLayer === i ? ' active-layer' : '');
-      row.draggable = true;
-      row.dataset.layerIndex = String(i);
-      row.addEventListener('dragstart', (e) => {
-        e.dataTransfer!.setData('text/plain', String(i));
-        row.style.opacity = '0.5';
+    const categories = LAYER_CATEGORIES.map(c => ({ label: c.label, types: new Set(c.types) }));
+
+    // 更新"全部"复选框状态
+    const updateAllCheck = (allCb: HTMLInputElement) => {
+      allCb.checked = loadedLayers.every(({ layer }) => layer.visible);
+      allCb.indeterminate = !allCb.checked && loadedLayers.some(({ layer }) => layer.visible);
+    };
+
+    // ── "全部图层" 行 ──
+    const allRow = document.createElement('div');
+    allRow.className = 'layer-all-toggle';
+    const allCb = document.createElement('input');
+    allCb.type = 'checkbox'; allCb.className = 'category-checkbox';
+    allCb.checked = loadedLayers.every(({ layer }) => layer.visible);
+    allCb.indeterminate = !allCb.checked && loadedLayers.some(({ layer }) => layer.visible);
+    allCb.addEventListener('change', (e) => {
+      e.stopPropagation();
+      const v = allCb.checked;
+      for (const { layer } of loadedLayers) layer.visible = v;
+      this.layerListEl.querySelectorAll<HTMLInputElement>('.category-checkbox').forEach(c => { c.checked = v; c.indeterminate = false; });
+      this.layerListEl.querySelectorAll<HTMLInputElement>('.layer-checkbox').forEach(c => { c.checked = v; });
+      this.requestRender();
+    });
+    const allLabel = document.createElement('span');
+    allLabel.className = 'category-label'; allLabel.textContent = '全部图层';
+    const allCount = document.createElement('span');
+    allCount.className = 'category-count'; allCount.textContent = `(${loadedLayers.length})`;
+    allRow.appendChild(allCb); allRow.appendChild(allLabel); allRow.appendChild(allCount);
+    this.layerListEl.appendChild(allRow);
+
+    // ── 分类树 ──
+    for (const cat of categories) {
+      const catLayers = loadedLayers.filter(({ layer }) => {
+        if (layer.displayCategory) return layer.displayCategory === cat.label;
+        return cat.types.has(layer.layerType);
       });
-      row.addEventListener('dragend', () => { row.style.opacity = ''; row.classList.remove('drag-over-top', 'drag-over-bottom'); });
-      row.addEventListener('dragover', (e) => {
+      if (catLayers.length === 0) continue;
+
+      const group = document.createElement('div');
+      group.className = 'layer-category-group';
+
+      // 分类头部
+      const header = document.createElement('div');
+      header.className = 'layer-category-header';
+
+      const toggle = document.createElement('span');
+      toggle.className = 'category-toggle'; toggle.textContent = '▼';
+
+      const catCb = document.createElement('input');
+      catCb.type = 'checkbox'; catCb.className = 'category-checkbox';
+      catCb.checked = catLayers.every(({ layer }) => layer.visible);
+      catCb.indeterminate = !catCb.checked && catLayers.some(({ layer }) => layer.visible);
+
+      const catLabel = document.createElement('span');
+      catLabel.className = 'category-label'; catLabel.textContent = cat.label;
+
+      const catCount = document.createElement('span');
+      catCount.className = 'category-count'; catCount.textContent = `(${catLayers.length})`;
+
+      header.appendChild(toggle); header.appendChild(catCb); header.appendChild(catLabel); header.appendChild(catCount);
+
+      const children = document.createElement('div');
+      children.className = 'layer-category-children';
+
+      // 允许拖拽图层到分类头部以移动到该分类
+      header.addEventListener('dragover', (e) => {
         e.preventDefault();
-        const rect = row.getBoundingClientRect();
-        const midY = rect.top + rect.height / 2;
-        row.classList.remove('drag-over-top', 'drag-over-bottom');
-        if (e.clientY < midY) {
-          row.classList.add('drag-over-top');
-        } else {
-          row.classList.add('drag-over-bottom');
-        }
+        header.classList.add('drag-over-category');
       });
-      row.addEventListener('dragleave', () => { row.classList.remove('drag-over-top', 'drag-over-bottom'); });
-      row.addEventListener('drop', (e) => {
+      header.addEventListener('dragleave', () => { header.classList.remove('drag-over-category'); });
+      header.addEventListener('drop', (e) => {
         e.preventDefault();
-        row.classList.remove('drag-over-top', 'drag-over-bottom');
+        header.classList.remove('drag-over-category');
         const fromIdx = parseInt(e.dataTransfer!.getData('text/plain'));
-        if (isNaN(fromIdx) || fromIdx === i) return;
-        const rect = row.getBoundingClientRect();
-        const midY = rect.top + rect.height / 2;
-        const insertBefore = e.clientY < midY;
-        this.moveLayerTo(fromIdx, i, insertBefore);
+        if (isNaN(fromIdx)) return;
+        const layer = this.layerManager.getLayer(fromIdx);
+        if (!layer) return;
+        // 如果拖到自身所在的分类，不处理
+        const srcCat = layer.displayCategory || categories.find(c => c.types.has(layer.layerType))?.label;
+        if (srcCat === cat.label) return;
+        layer.displayCategory = cat.label;
         this.updateLayerPanel();
-        this.updateActiveLayerSelect();
         this.requestRender();
       });
 
-      const arrow = document.createElement('span');
-      arrow.className = 'active-arrow' + (this.displayOptions.activeLayer === i ? '' : ' hidden');
-      arrow.textContent = '▶';
-
-      const cb = document.createElement('input');
-      cb.type = 'checkbox'; cb.className = 'layer-checkbox'; cb.checked = layer.visible;
-      cb.addEventListener('change', (e) => { e.stopPropagation(); layer.visible = cb.checked; this.requestRender(); });
-
-      const swatch = document.createElement('div');
-      swatch.className = 'layer-color-swatch';
-      swatch.style.backgroundColor = layer.color;
-      swatch.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.showLayerColorDialog(layer, swatch);
+      // 折叠/展开
+      header.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).tagName === 'INPUT') return;
+        const collapsed = children.classList.toggle('collapsed');
+        toggle.textContent = collapsed ? '▶' : '▼';
       });
 
-      const name = document.createElement('span');
-      name.className = 'layer-name-text';
-      const displayName = layer.layerName || `图层 ${i}`;
-      const fileName = layer.fileName || '';
-      name.textContent = displayName !== fileName ? `${displayName}(${fileName})` : displayName;
-      name.title = fileName || displayName;
-
-      const typeSelect = document.createElement('select');
-      typeSelect.className = 'layer-type-select';
-      const allTypes = Object.values(LayerType);
-      for (const lt of allTypes) {
-        const opt = document.createElement('option');
-        opt.value = lt;
-        opt.textContent = LAYER_TYPE_LABELS[lt];
-        if (layer.layerType === lt) opt.selected = true;
-        typeSelect.appendChild(opt);
-      }
-      typeSelect.addEventListener('change', () => {
-        const newType = typeSelect.value as LayerType;
-        layer.layerType = newType;
-        if (LAYER_TYPE_COLORS[newType]) {
-          layer.color = LAYER_TYPE_COLORS[newType];
-          swatch.style.backgroundColor = layer.color;
-        }
-        if (newType !== LayerType.Unknown && LAYER_TYPE_LABELS[newType]) {
-          layer.layerName = LAYER_TYPE_LABELS[newType];
-          name.textContent = layer.layerName;
-        }
-        this.requestRender();
-      });
-
-      const del = document.createElement('button');
-      del.className = 'layer-del'; del.textContent = '✕';
-      del.addEventListener('click', (e) => {
-        e.stopPropagation(); this.layerManager.removeLayer(i);
-        this.updateLayerPanel(); this.updateActiveLayerSelect(); this.requestRender();
-      });
-
-      // 透明度：滑块 + 数值
-      const opacityWrap = document.createElement('div');
-      opacityWrap.className = 'layer-opacity-wrap';
-      const opacitySlider = document.createElement('input');
-      opacitySlider.type = 'range'; opacitySlider.min = '0'; opacitySlider.max = '100';
-      opacitySlider.value = String(Math.round(layer.opacity * 100));
-      opacitySlider.className = 'layer-opacity-slider';
-      const opacityInput = document.createElement('input');
-      opacityInput.type = 'number'; opacityInput.min = '0'; opacityInput.max = '100';
-      opacityInput.value = String(Math.round(layer.opacity * 100));
-      opacityInput.className = 'layer-opacity-input';
-      opacityInput.title = '透明度 %';
-
-      const syncOpacity = (val: number) => {
-        val = Math.max(0, Math.min(100, val));
-        layer.opacity = val / 100;
-        opacitySlider.value = String(val);
-        opacityInput.value = String(val);
-        this.requestRender();
+      // 分类复选框：批量切换子图层可见性
+      const updateCatCheck = () => {
+        catCb.checked = catLayers.every(({ layer }) => layer.visible);
+        catCb.indeterminate = !catCb.checked && catLayers.some(({ layer }) => layer.visible);
       };
-      opacitySlider.addEventListener('input', (e) => {
+      catCb.addEventListener('change', (e) => {
         e.stopPropagation();
-        syncOpacity(parseInt(opacitySlider.value));
+        const v = catCb.checked;
+        for (const { layer } of catLayers) layer.visible = v;
+        children.querySelectorAll<HTMLInputElement>('.layer-checkbox').forEach(c => { c.checked = v; });
+        updateAllCheck(allCb);
+        this.requestRender();
       });
-      opacityInput.addEventListener('input', (e) => {
-        e.stopPropagation();
-        const v = parseInt(opacityInput.value);
-        if (!isNaN(v)) syncOpacity(v);
-      });
-      opacitySlider.addEventListener('click', (e) => e.stopPropagation());
-      opacityInput.addEventListener('click', (e) => e.stopPropagation());
 
-      opacityWrap.appendChild(opacitySlider);
-      opacityWrap.appendChild(opacityInput);
+      // 添加图层行
+      for (const { index, layer } of catLayers) {
+        const row = this.createLayerRow(index, layer);
+        // 图层勾选变化时同步更新父级复选框
+        const cb = row.querySelector('.layer-checkbox') as HTMLInputElement;
+        cb.addEventListener('change', () => { updateCatCheck(); updateAllCheck(allCb); });
+        children.appendChild(row);
+      }
 
-      row.appendChild(arrow); row.appendChild(cb); row.appendChild(swatch); row.appendChild(name); row.appendChild(typeSelect);
-      row.appendChild(opacityWrap);
-      row.appendChild(del);
-      row.addEventListener('click', (e) => {
-        if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).tagName === 'BUTTON' || (e.target as HTMLElement).tagName === 'SELECT') return;
-        this.displayOptions.activeLayer = i;
-        this.activeLayerSelect.value = String(i);
-        this.updateLayerPanel(); this.updateFileInfo(); this.requestRender();
-      });
-      row.addEventListener('contextmenu', (e) => {
-        e.preventDefault(); e.stopPropagation();
-        this.showLayerContextMenu(e.clientX, e.clientY, i, layer, swatch);
-      });
-      row.addEventListener('dblclick', (e) => {
-        e.preventDefault(); e.stopPropagation();
-        this.showLayerContextMenu(
-          row.getBoundingClientRect().right,
-          row.getBoundingClientRect().top,
-          i, layer, swatch
-        );
-      });
-      this.layerListEl.appendChild(row);
+      group.appendChild(header); group.appendChild(children);
+      this.layerListEl.appendChild(group);
     }
   }
 
@@ -1806,8 +1916,10 @@ export class App {
   }
 
   private exportDXF() {
-    const dxf = exportToDXF(this.layerManager);
-    if (dxf) downloadDXF(dxf);
+    showExportDxfDialog(this.layerManager, (config) => {
+      const dxf = exportToDXF(this.layerManager, config);
+      if (dxf) downloadDXF(dxf);
+    });
   }
 
   async loadEmbeddedData() {

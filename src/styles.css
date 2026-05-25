@@ -522,6 +522,157 @@ html, body {
   flex-direction: column;
 }
 
+/* 全部图层开关行 */
+.layer-all-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 分类组 */
+.layer-category-group {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.layer-category-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  background: var(--bg-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  user-select: none;
+}
+.layer-category-header:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.layer-category-header.drag-over-category {
+  background: var(--accent-dim, rgba(0,120,215,0.15));
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+}
+
+.category-toggle {
+  font-size: 9px;
+  width: 12px;
+  text-align: center;
+  flex-shrink: 0;
+  color: var(--text-dim);
+}
+
+.category-checkbox {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+}
+
+.category-label {
+  flex: 1;
+}
+
+.category-count {
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: normal;
+}
+
+.layer-category-children {
+  /* 子图层容器 */
+}
+
+.layer-category-children.collapsed {
+  display: none;
+}
+
+/* 树状结构中子图层行缩进 */
+.layer-category-children .layer-row {
+  padding-left: 22px;
+}
+
+/* 导出 DXF 对话框 */
+.export-mode-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+}
+.export-mode-option:hover {
+  background: var(--bg-hover);
+}
+.export-mode-desc {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+.export-layer-tree {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+.export-layer-all {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.export-layer-group {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.export-layer-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  background: var(--bg-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  user-select: none;
+}
+.export-layer-header:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.export-layer-children {
+}
+.export-layer-children.collapsed {
+  display: none;
+}
+.export-layer-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px 3px 22px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.export-layer-item:hover {
+  background: var(--bg-hover);
+}
+
 .layer-row {
   display: flex;
   align-items: center;

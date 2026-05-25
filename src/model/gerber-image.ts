@@ -75,6 +75,7 @@ export class GerberImage {
   // 可见性
   visible: boolean = true;
   opacity: number = 1.0; // 0-1 每层独立透明度
+  displayCategory: string | null = null; // 覆盖默认分类，允许图层显示在其他分类树下
 
   // 边界框（nm）
   boundingBox: { min: Point; max: Point } | null = null;
