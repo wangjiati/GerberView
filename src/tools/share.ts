@@ -301,10 +301,18 @@ function deserImage(s: SerializedGerberImage): GerberImage {
 
 // ---- Public API ----
 
-export function serializeLayerManager(lm: LayerManager): SharePayload {
+export function serializeLayerManager(lm: LayerManager, selectedIndices?: number[]): SharePayload {
   const layers: SerializedGerberImage[] = [];
-  for (const layer of lm.layers) {
-    if (layer) layers.push(serImage(layer));
+  if (selectedIndices) {
+    const indexSet = new Set(selectedIndices);
+    for (const idx of selectedIndices) {
+      const layer = lm.layers[idx];
+      if (layer) layers.push(serImage(layer));
+    }
+  } else {
+    for (const layer of lm.layers) {
+      if (layer) layers.push(serImage(layer));
+    }
   }
   return { v: SHARE_VERSION, layers };
 }
@@ -362,8 +370,8 @@ function base64ToArrayBuffer(base64: string): Uint8Array {
 
 // ---- HTML generation ----
 
-export async function generateShareHTML(lm: LayerManager): Promise<Blob> {
-  const payload = serializeLayerManager(lm);
+export async function generateShareHTML(lm: LayerManager, selectedIndices?: number[]): Promise<Blob> {
+  const payload = serializeLayerManager(lm, selectedIndices);
   const json = JSON.stringify(payload);
   const compressed = await compressToBase64(json);
 

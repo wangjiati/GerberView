@@ -17,6 +17,9 @@ import { showExportDxfDialog } from './export-dxf-dialog';
 import { MeasurementManager, MeasureMode, Measurement, computeDistance, computeAngleDeg, computePolygonArea, formatNm, renderMeasurements } from '../tools/measurement';
 import { runDfmAnalysis, formatDfmValue, DfmReport } from '../tools/dfm-analysis';
 import { loadShareData, generateShareHTML, downloadShareHTML } from '../tools/share';
+import { showShareDialog } from './share-dialog';
+import { showExportPngDialog } from './export-png-dialog';
+import { exportLayersAsZip, downloadZip } from '../tools/export-png';
 
 export type UnitMode = 'mm' | 'inch' | 'mil';
 
@@ -1903,11 +1906,20 @@ export class App {
     setTimeout(() => document.addEventListener('mousedown', closeHandler), 0);
   }
 
-  private exportPNG() {
-    const link = document.createElement('a');
-    link.download = 'gerberview-export.png';
-    link.href = this.canvas.toDataURL('image/png');
-    link.click();
+  private async exportPNG() {
+    if (this.layerManager.getLoadedCount() === 0) {
+      alert('请先加载 Gerber 文件再导出 PNG。');
+      return;
+    }
+    showExportPngDialog(this.layerManager, async ({ dpi, selectedLayers }) => {
+      try {
+        const blob = await exportLayersAsZip(this.layerManager, selectedLayers, dpi, this.displayOptions);
+        downloadZip(blob);
+      } catch (err) {
+        console.error('导出 PNG 失败:', err);
+        alert('导出失败: ' + (err instanceof Error ? err.message : String(err)));
+      }
+    });
   }
 
   private exportSVG() {
@@ -1992,13 +2004,15 @@ export class App {
       alert('请先加载 Gerber 文件再导出分享 HTML。');
       return;
     }
-    try {
-      const blob = await generateShareHTML(this.layerManager);
-      downloadShareHTML(blob);
-    } catch (err) {
-      console.error('导出分享 HTML 失败:', err);
-      alert('导出失败: ' + (err instanceof Error ? err.message : String(err)));
-    }
+    showShareDialog(this.layerManager, async (selectedLayers) => {
+      try {
+        const blob = await generateShareHTML(this.layerManager, selectedLayers);
+        downloadShareHTML(blob);
+      } catch (err) {
+        console.error('导出分享 HTML 失败:', err);
+        alert('导出失败: ' + (err instanceof Error ? err.message : String(err)));
+      }
+    });
   }
 
   private showDfmReport() {
