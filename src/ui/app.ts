@@ -14,6 +14,7 @@ import { Interpolation } from '../model/enums';
 import { exportToSVG, downloadSVG } from '../tools/exporter-svg';
 import { exportToDXF, downloadDXF } from '../tools/exporter-dxf';
 import { showExportDxfDialog } from './export-dxf-dialog';
+import { showExportSvgDialog } from './export-svg-dialog';
 import { MeasurementManager, MeasureMode, Measurement, computeDistance, computeAngleDeg, computePolygonArea, formatNm, renderMeasurements } from '../tools/measurement';
 import { runDfmAnalysis, formatDfmValue, DfmReport } from '../tools/dfm-analysis';
 import { loadShareData, generateShareHTML, downloadShareHTML } from '../tools/share';
@@ -1048,6 +1049,8 @@ export class App {
 
     switch (item.shapeType) {
       case ShapeType.Segment: {
+        const lw = vp.worldToScreenDist(item.size.x);
+        ctx.lineWidth = Math.max(lw, lineW);
         ctx.beginPath();
         ctx.moveTo(tp(item.start).x, tp(item.start).y);
         ctx.lineTo(tp(item.end).x, tp(item.end).y);
@@ -1059,6 +1062,8 @@ export class App {
         const s = tp(item.start);
         const e = tp(item.end);
         const r = Math.sqrt((s.x - center.x) ** 2 + (s.y - center.y) ** 2);
+        const lw = vp.worldToScreenDist(item.size.x);
+        ctx.lineWidth = Math.max(lw, lineW);
         if (r > 0.5) {
           const sa = Math.atan2(s.y - center.y, s.x - center.x);
           const ea = Math.atan2(e.y - center.y, e.x - center.x);
@@ -1076,6 +1081,13 @@ export class App {
         ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, Math.PI * 2); ctx.stroke();
         break;
       }
+      case ShapeType.SpotRect: {
+        const c = tp(item.start);
+        const hw = vp.worldToScreenDist(item.size.x) / 2;
+        const hh = vp.worldToScreenDist(item.size.y) / 2;
+        ctx.strokeRect(c.x - hw, c.y - hh, hw * 2, hh * 2);
+        break;
+      }
       case ShapeType.Polygon: {
         if (item.polygonPoints.length >= 3) {
           const pts = item.polygonPoints.map(tp);
@@ -1087,10 +1099,10 @@ export class App {
         break;
       }
       default: {
-        // 包围盒高亮
         const c = tp(item.start);
-        const s = Math.max(vp.worldToScreenDist(item.size.x), vp.worldToScreenDist(item.size.y)) / 2;
-        ctx.strokeRect(c.x - s, c.y - s, s * 2, s * 2);
+        const hw = vp.worldToScreenDist(item.size.x) / 2;
+        const hh = vp.worldToScreenDist(item.size.y) / 2;
+        ctx.strokeRect(c.x - hw, c.y - hh, hw * 2, hh * 2);
         break;
       }
     }
@@ -1923,8 +1935,14 @@ export class App {
   }
 
   private exportSVG() {
-    const svg = exportToSVG(this.layerManager, this.theme.canvasBackground);
-    if (svg) downloadSVG(svg);
+    if (this.layerManager.getLoadedCount() === 0) {
+      alert('请先加载 Gerber 文件再导出 SVG。');
+      return;
+    }
+    showExportSvgDialog(this.layerManager, (selectedLayers) => {
+      const svg = exportToSVG(this.layerManager, this.theme.canvasBackground, selectedLayers);
+      if (svg) downloadSVG(svg);
+    });
   }
 
   private exportDXF() {

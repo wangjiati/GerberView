@@ -3,7 +3,7 @@ import { GerberItem, Point } from '../model/gerber-item';
 import { ShapeType, Interpolation, IU_PER_MM } from '../model/enums';
 import { transformPointWorld } from './transform';
 
-export function exportToSVG(layerManager: LayerManager, backgroundColor: string): string {
+export function exportToSVG(layerManager: LayerManager, backgroundColor: string, selectedLayers?: number[]): string {
   const bb = layerManager.computeTotalBoundingBox();
   if (!bb) return '';
 
@@ -15,6 +15,8 @@ export function exportToSVG(layerManager: LayerManager, backgroundColor: string)
   const w = maxX - minX;
   const h = maxY - minY;
 
+  const layerSet = selectedLayers ? new Set(selectedLayers) : null;
+
   let svg = `<?xml version="1.0" encoding="UTF-8"?>\n`;
   svg += `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${w} ${h}" width="${w}" height="${h}">\n`;
   svg += `  <rect x="${minX}" y="${minY}" width="${w}" height="${h}" fill="${backgroundColor}"/>\n`;
@@ -22,6 +24,7 @@ export function exportToSVG(layerManager: LayerManager, backgroundColor: string)
   for (let i = 0; i < layerManager.layers.length; i++) {
     const layer = layerManager.layers[i];
     if (!layer || !layer.visible) continue;
+    if (layerSet && !layerSet.has(i)) continue;
     svg += `  <g id="layer-${i}" inkscape:label="${esc(layer.layerName || layer.fileName)}">\n`;
     for (const item of layer.items) {
       svg += itemToSVG(item, layer);
