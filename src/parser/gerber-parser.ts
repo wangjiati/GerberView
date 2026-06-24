@@ -227,6 +227,14 @@ export class GerberParser {
 
   // 处理普通数据行（G/D/X/Y/I/J/M 命令）
   private processDataLine() {
+    // Gerber 中 D-code 是模态的：当一个数据块（以 * 结束）含坐标但没有
+    // 显式 D-code 时，沿用上一次的 D-code（m_Last_Pen_Command）。
+    // 例: "X458147Y341769D01*" 之后若干行 "Y341771*" "X461147Y354235*"
+    // 这些省略 D01 的块必须继续绘制，否则会丢失几何（KiCad readgerb.cpp
+    // 在读到 '*' 时用 m_Last_Pen_Command 调用 Execute_DCODE_Command）。
+    let blockHadDCode = false;
+    let blockHadCoord = false;
+
     while (this.pos < this.line.length) {
       const ch = this.line[this.pos];
 
@@ -245,14 +253,27 @@ export class GerberParser {
       } else if (ch === 'D') {
         this.pos++;
         this.executeDCode();
+        blockHadDCode = true;
       } else if (ch === 'X' || ch === 'Y') {
         this.readXYCoord();
+        blockHadCoord = true;
       } else if (ch === 'I' || ch === 'J') {
         this.readIJCoord();
+        // IJ 通常伴随坐标（圆弧），视为有坐标
+        blockHadCoord = true;
       } else if (ch === 'M') {
         this.pos++;
         this.readMCode();
       } else if (ch === '*') {
+        // 块结束符：若本块读了坐标但无显式 D-code，按模态 D 执行
+        if (blockHadCoord && !blockHadDCode && this.lastPenCommand >= 1 && this.lastPenCommand <= 3) {
+          if (this.lastPenCommand === 1) this.executeD01();
+          else if (this.lastPenCommand === 2) this.executeD02();
+          else this.executeD03();
+          blockHadDCode = true; // 防止行内多个 * 重复执行
+        }
+        blockHadCoord = false;
+        blockHadDCode = false;
         this.pos++;
       } else if (ch === ' ' || ch === '\t') {
         this.pos++;

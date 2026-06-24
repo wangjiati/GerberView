@@ -143,8 +143,14 @@ export class ExcellonParser {
     // T 命令：可能是刀具定义或刀具选择
     const toolDefMatch = line.match(/^T(\d+)C([0-9.]+)/i);
     if (toolDefMatch) {
-      // 刀具定义（可能在正文出现）
+      // 刀具定义（可能在正文出现）。部分软件（如 PADS）在正文用
+      // "T1C.045F139S55" 既定义工具又隐含选刀。此处定义工具的同时也
+      // 切换 currentTool，确保后续钻孔坐标能绑定到该工具，否则会出现
+      // items=0 的静默错误（见 processToolDef / createDrillHit）。
+      const toolNum = parseInt(toolDefMatch[1]);
       this.processToolDef(line);
+      this.currentTool = toolNum;
+      this.image.getDCcode(toolNum).inUse = true;
       return;
     }
     // 刀具选择

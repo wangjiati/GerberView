@@ -1311,9 +1311,11 @@ export class App {
   private openFiles(type: string) {
     const input = document.createElement('input');
     input.type = 'file'; input.multiple = true;
-    const gerberExts = '.gbr,.ger,.gtl,.gbl,.gts,.gbs,.gto,.gbo,.gko,.gm1,.gm2,.gm3';
-    const drillExts = '.drl,.txt,.xln,.drd';
-    input.accept = type === 'excellon' ? drillExts
+    // gerber 列表包含常见与非标准扩展名 (PCB 软件常用 .top/.bot/.tsm/.bsm/.brd 等)
+    const gerberExts = '.gbr,.ger,.gtl,.gbl,.gts,.gbs,.gto,.gbo,.gko,.gm1,.gm2,.gm3,.top,.bot,.tsm,.bsm,.tslk,.bslk,.brd,.cmp,.sol,.stc,.sts,.plc,.pls';
+    const drillExts = '.drl,.txt,.xln,.drd,.ncd';
+    // 三个菜单均支持 ZIP：ZIP 内的文件用内容检测识别类型
+    input.accept = type === 'excellon' ? drillExts + ',.zip'
       : type === 'gerber' ? gerberExts + ',.zip'
       : gerberExts + ',' + drillExts + ',.zip';
     input.addEventListener('change', () => { if (input.files?.length) this.loadFiles(Array.from(input.files)); });
@@ -1337,21 +1339,29 @@ export class App {
   private async loadZipFile(file: File) {
     try {
       const zip = await JSZip.loadAsync(file);
-      const gerberExts = ['.gbr', '.ger', '.gtl', '.gbl', '.gts', '.gbs', '.gto', '.gbo', '.gko', '.gm1', '.gm2', '.gm3', '.gbo'];
-      const drillExts = ['.drl', '.xln', '.drd', '.txt'];
+
+      // 扩展名黑名单：明确不是 PCB 制造数据的文件（报告、说明等）
+      const skipExts = ['.rep', '.pdf', '.png', '.jpg', '.jpeg', '.csv', '.drl.rpt', '.json', '.html', '.htm'];
 
       for (const [path, entry] of Object.entries(zip.files)) {
         if (entry.dir) continue;
-        const ext = '.' + (path.split('.').pop() ?? '').toLowerCase();
-        if (!gerberExts.includes(ext) && !drillExts.includes(ext)) continue;
+        const fileName = path.split('/').pop() || path;
+        const ext = '.' + (fileName.split('.').pop() ?? '').toLowerCase();
+        if (skipExts.includes(ext)) continue;
 
         const layerIndex = this.layerManager.getLoadedCount();
         if (layerIndex >= 32) break;
 
+        // 用内容检测而非扩展名白名单：PCB 软件常用非标准扩展名
+        // (如 .BOT/.TOP/.TSM/.TSLK/.BSM/.BRD/.NCD 等)，靠 detectGerberFile
+        // /detectExcellonFile 判断文件实际类型，避免漏载。
         const text = await entry.async('string');
-        const fileName = path.split('/').pop() || path;
+        const isExcellon = detectExcellonFile(text);
+        const isGerber = !isExcellon && detectGerberFile(text);
+        if (!isExcellon && !isGerber) continue;
+
         let image: GerberImage;
-        if (detectExcellonFile(text)) {
+        if (isExcellon) {
           image = new ExcellonParser().parse(text, fileName, layerIndex);
         } else {
           image = new GerberParser().parse(text, fileName, layerIndex);
@@ -1447,6 +1457,15 @@ export class App {
     if (ext === 'gbp') return LayerType.BottomPaste;
     if (ext === 'gko' || ext === 'gm1' || ext === 'gbr轮廓') return LayerType.EdgeCuts;
     if (ext === 'xnc' || ext === 'drl' || ext === 'drl') return LayerType.Drill;
+    // PADS / OrCAD / Allegro 等非标准扩展名 (常见于生产文件 ZIP 内)
+    if (ext === 'top' || ext === 'cmp' || ext === 'plc' || ext === 'ly1') return LayerType.TopCopper;
+    if (ext === 'bot' || ext === 'sol' || ext === 'pls' || ext === 'ly2') return LayerType.BottomCopper;
+    if (ext === 'tsm' || ext === 'smt' || ext === 'ssm' || ext === 'sm') return LayerType.TopSolderMask;
+    if (ext === 'bsm' || ext === 'smb') return LayerType.BottomSolderMask;
+    if (ext === 'tslk' || ext === 'sst' || ext === 'ssc' || ext === 'sil') return LayerType.TopSilkscreen;
+    if (ext === 'bslk' || ext === 'ssb') return LayerType.BottomSilkscreen;
+    if (ext === 'brd' || ext === 'outline') return LayerType.EdgeCuts;
+    if (ext === 'ncd' || ext === 'nc' || ext === 'tap') return LayerType.Drill;
 
     // 文件名关键词
     if (/(?:^|[-_.])f?cu(?:[-_.]|$)/i.test(name) || /top.*copper|copper.*top/i.test(name)) return LayerType.TopCopper;

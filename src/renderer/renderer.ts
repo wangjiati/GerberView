@@ -394,15 +394,19 @@ export class Renderer {
     const pixelW = this.syncLineWidth(lineW);
 
     if (fill) {
-      const start = this.roundCoord(rawStart.x, rawStart.y, pixelW);
-      const end = this.roundCoord(rawEnd.x, rawEnd.y, pixelW);
+      // 用原始浮点端点绘制，不做整数像素对齐。
+      // 原因：Gerber 常用密集 hatch 线 (线宽≈间距，如 0.01" 线 / 0.01" 间距)
+      // 模拟实心铜填充。若把端点四舍五入到整数像素，间距 <1px 的相邻线会
+      // 坍缩到同一像素位置，使本应实心填充的区域变成稀疏线条（与 KiCad
+      // 不一致）。Canvas2D 的 stroke 配合抗锯齿在浮点坐标下能像 KiCad
+      // Cairo GAL 一样正确叠加，故这里保留亚像素精度。
       ctx.strokeStyle = color;
       ctx.lineWidth = pixelW;
       ctx.lineCap = pixelW < 1.5 ? 'butt' : (isRectPen ? 'butt' : 'round');
       ctx.lineJoin = pixelW < 1.5 ? 'miter' : 'round';
       ctx.beginPath();
-      ctx.moveTo(start.x, start.y);
-      ctx.lineTo(end.x, end.y);
+      ctx.moveTo(rawStart.x, rawStart.y);
+      ctx.lineTo(rawEnd.x, rawEnd.y);
       ctx.stroke();
     } else {
       const r = lineW / 2;
