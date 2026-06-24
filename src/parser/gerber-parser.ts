@@ -63,6 +63,17 @@ export class GerberParser {
   private currentNetAttrs: string[] = [];
   private currentNetName: string = '';
   private currentCompRef: string = '';
+  // 当前元件的元数据属性（.CVal/.CFtp/.CMnt/.CRot/.CMfr/.CMPN）
+  // 在 .C/.P 命令前出现，关联到当前元件 ref
+  private currentCompValue: string = '';
+  private currentCompFootprint: string = '';
+  private currentCompMountType: string = '';
+  private currentCompRotation: number = 0;
+  private currentCompManufacturer: string = '';
+  private currentCompMpn: string = '';
+  // 当前焊盘属性 (.P)
+  private currentPadName: string = '';
+  private currentPinFunction: string = '';
 
   // 缓冲区
   private line: string = '';
@@ -99,6 +110,16 @@ export class GerberParser {
     this.stepAndRepeat = defaultStepAndRepeat();
     this.aperFunction = '';
     this.currentNetAttrs = [];
+    this.currentNetName = '';
+    this.currentCompRef = '';
+    this.currentCompValue = '';
+    this.currentCompFootprint = '';
+    this.currentCompMountType = '';
+    this.currentCompRotation = 0;
+    this.currentCompManufacturer = '';
+    this.currentCompMpn = '';
+    this.currentPadName = '';
+    this.currentPinFunction = '';
 
     // 预处理：将整个文本中的 %...% 块提取出来并合并为单行
     // Gerber 文件中 % 开头的行可能跨多行（如光圈宏 %AM...%）
@@ -218,6 +239,9 @@ export class GerberParser {
     // 提取命令 ID（前两个字母）
     const cleaned = content.replace(/^\s+/, '').replace(/\*+$/, '');
     if (cleaned.length < 2) return;
+
+    // 遇到 % 块命令即标记为 RS-274X 格式（RS-274D 老格式无扩展命令）
+    this.image.hasRS274X = true;
 
     const cmdId = cleaned.substring(0, 2).toUpperCase();
     const body = cleaned.substring(2);
@@ -518,15 +542,30 @@ export class GerberParser {
       this.currentNetAttrs = [];
       this.currentNetName = '';
       this.currentCompRef = '';
+      this.resetComponentAttrs();
     } else if (cleaned === '.AperFunction') {
       this.aperFunction = '';
     } else if (cleaned === '.N') {
       this.currentNetName = '';
     } else if (cleaned === '.C') {
       this.currentCompRef = '';
+      this.resetComponentAttrs();
     } else if (cleaned === '.P') {
-      // Pad attributes cleared
+      this.currentPadName = '';
+      this.currentPinFunction = '';
     }
+  }
+
+  /** 重置当前元件的累积属性（.CVal/.CFtp/.../.CMPN 及焊盘属性） */
+  private resetComponentAttrs() {
+    this.currentCompValue = '';
+    this.currentCompFootprint = '';
+    this.currentCompMountType = '';
+    this.currentCompRotation = 0;
+    this.currentCompManufacturer = '';
+    this.currentCompMpn = '';
+    this.currentPadName = '';
+    this.currentPinFunction = '';
   }
 
   private parseApertureAttribute(body: string) {
@@ -545,18 +584,66 @@ export class GerberParser {
         this.currentNetName = parts[1];
         this.image.netNames.add(parts[1]);
       } else if (type === '.C' && parts.length > 1) {
-        // .C,<ref> — 设置元件参考
+        // .C,<ref> — 设置元件参考。属性 .CVal/.CFtp/.CMnt/.CRot/.CMfr/.CMPN
+        // 属于当前元件，在此点提交到元件元数据表。
         this.currentCompRef = parts[1];
         this.image.componentRefs.add(parts[1]);
+        this.commitComponentAttrs();
       } else if (type === '.P' && parts.length > 2) {
         // .P,<ref>,<padname>[,<pinfunction>]
         this.currentCompRef = parts[1];
         this.image.componentRefs.add(parts[1]);
+        this.currentPadName = parts[2] ?? '';
+        this.currentPinFunction = parts[3] ?? '';
+        this.commitComponentAttrs();
+      } else if (type === '.CVal' && parts.length > 1) {
+        this.currentCompValue = parts[1];
+        this.commitComponentAttrs();
+      } else if (type === '.CFtp' && parts.length > 1) {
+        this.currentCompFootprint = parts[1];
+        this.commitComponentAttrs();
+      } else if (type === '.CMnt' && parts.length > 1) {
+        this.currentCompMountType = parts[1];
+        this.commitComponentAttrs();
+      } else if (type === '.CRot' && parts.length > 1) {
+        const r = parseFloat(parts[1]);
+        if (!isNaN(r)) { this.currentCompRotation = r; this.commitComponentAttrs(); }
+      } else if (type === '.CMfr' && parts.length > 1) {
+        this.currentCompManufacturer = parts[1];
+        this.commitComponentAttrs();
+      } else if (type === '.CMPN' && parts.length > 1) {
+        this.currentCompMpn = parts[1];
+        this.commitComponentAttrs();
       }
-      // .CRot, .CVal, .CMnt, .CFtp, .CMfr, .CMPN 等扩展属性
-      // 都属于当前元件的属性，不需要特殊处理，只需存储
     }
     this.currentNetAttrs.push(body);
+  }
+
+  /**
+   * 将当前累积的元件属性提交到 image.components 元数据表。
+   * 属性按 ref 聚合：同一 ref 多次提交时合并（保留已设值，新值覆盖）。
+   */
+  private commitComponentAttrs() {
+    if (!this.currentCompRef) return;
+    const ref = this.currentCompRef;
+    const existing = this.image.components.get(ref);
+    // 合并：保留首次记录的值（除非当前有新值）
+    const value = this.currentCompValue || existing?.value || '';
+    const footprint = this.currentCompFootprint || existing?.footprint || '';
+    const mountType = this.currentCompMountType || existing?.mountType || '';
+    const rotation = this.currentCompRotation !== 0 ? this.currentCompRotation : (existing?.rotation ?? 0);
+    const manufacturer = this.currentCompManufacturer || existing?.manufacturer || '';
+    const mpn = this.currentCompMpn || existing?.mpn || '';
+    this.image.components.set(ref, {
+      ref, value, footprint, mountType, rotation, manufacturer, mpn,
+      // 几何字段(padCount/centerX/centerY/nets/layerSide)在导出时由
+      // collectComponents 遍历 items 聚合填充
+      padCount: existing?.padCount ?? 0,
+      centerX: existing?.centerX ?? 0,
+      centerY: existing?.centerY ?? 0,
+      nets: existing?.nets ?? [],
+      layerSide: existing?.layerSide ?? 'unknown',
+    });
   }
 
   // ========== 光圈定义解析 ==========
@@ -1304,6 +1391,8 @@ export class GerberParser {
     item.aperFunction = this.aperFunction;
     item.netName = this.currentNetName;
     item.componentRef = this.currentCompRef;
+    item.padName = this.currentPadName;
+    item.pinFunction = this.currentPinFunction;
     if (this.aperFunction) this.image.aperFunctions.add(this.aperFunction);
   }
 

@@ -24,6 +24,8 @@ export interface DisplayOptions {
   highlightComp: string;
   highlightAttr: string;
   highlightDcode: number;
+  highlightPadComp: string;   // 焊盘高亮：所属位号(与 highlightPadName 联用)
+  highlightPadName: string;   // 焊盘高亮：焊盘名
   gridConfig: Partial<GridConfig>;
   backgroundColor: string;
   dcodeLabelColor: string;
@@ -49,6 +51,8 @@ export const DEFAULT_DISPLAY_OPTIONS: DisplayOptions = {
   highlightComp: '',
   highlightAttr: '',
   highlightDcode: 0,
+  highlightPadComp: '',
+  highlightPadName: '',
   gridConfig: {},
   backgroundColor: '#000000',
   dcodeLabelColor: '#ffff00',
@@ -131,6 +135,10 @@ export class Renderer {
         this.renderLayerNormal(layer, alpha);
       }
     }
+
+    // 高亮标记层：在所有图层之上，为高亮的焊盘/闪光项叠加醒目标记，
+    // 解决小焊盘在缩小视图下填充色不可见的问题（位号/焊盘高亮通用）。
+    this.renderHighlightMarkers(ctx);
 
     if (this.displayOptions.mirror) {
       ctx.restore();
@@ -269,6 +277,45 @@ export class Renderer {
     }
   }
 
+  /**
+   * 高亮标记层：在所有图层之上为高亮 item 叠加醒目标记。
+   * 闪光焊盘 → 放大的亮色圆环(无论焊盘多小都可见)；
+   * 线段/弧 → 亮色描边轮廓。仅当存在任一高亮字段时遍历。
+   */
+  private renderHighlightMarkers(ctx: CanvasRenderingContext2D) {
+    const opts = this.displayOptions;
+    const hasHighlight = opts.highlightComp || opts.highlightNet ||
+      opts.highlightAttr || opts.highlightDcode > 0 ||
+      (opts.highlightPadComp && opts.highlightPadName);
+    if (!hasHighlight) return;
+
+    ctx.save();
+    ctx.setLineDash([3, 2]);
+    ctx.lineWidth = 1.5;
+
+    for (let i = this.layerManager.layers.length - 1; i >= 0; i--) {
+      const layer = this.layerManager.layers[i];
+      if (!layer || !layer.visible) continue;
+      for (const item of layer.items) {
+        if (!this.getHighlightColor(item)) continue;
+        const sp = this.viewport.worldToScreen(transformPointWorld(item, layer, item.start));
+        if (item.flashed) {
+          // 闪光焊盘：画放大的亮色圆环(半径取 max(焊盘半径, 5px))
+          const itemR = this.viewport.worldToScreenDist(Math.max(item.size.x, item.size.y)) / 2;
+          const r = Math.max(itemR + 3, 6);
+          ctx.strokeStyle = '#ffff00';
+          ctx.beginPath(); ctx.arc(sp.x, sp.y, r, 0, Math.PI * 2); ctx.stroke();
+        } else {
+          // 线段/弧：画亮色描边轮廓
+          ctx.strokeStyle = '#ffff00';
+          const ep = this.viewport.worldToScreen(transformPointWorld(item, layer, item.end));
+          ctx.beginPath(); ctx.moveTo(sp.x, sp.y); ctx.lineTo(ep.x, ep.y); ctx.stroke();
+        }
+      }
+    }
+    ctx.restore();
+  }
+
   private renderLayerXOR(layer: GerberImage) {
     const ctx = this.ctx;
     const { canvasWidth: w, canvasHeight: h } = this.viewport;
@@ -383,6 +430,10 @@ export class Renderer {
     if (opts.highlightNet && item.netName === opts.highlightNet) return '#00ff00';
     if (opts.highlightComp && item.componentRef === opts.highlightComp) return '#00ff00';
     if (opts.highlightAttr && item.aperFunction === opts.highlightAttr) return '#00ff00';
+    // 焊盘高亮：需同时匹配位号 + 焊盘名(焊盘名非唯一，须与位号联用)
+    if (opts.highlightPadName && opts.highlightPadComp
+      && item.padName === opts.highlightPadName
+      && item.componentRef === opts.highlightPadComp) return '#00ff00';
     return null;
   }
 

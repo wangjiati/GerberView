@@ -189,6 +189,13 @@ html, body {
   flex: 1;
   overflow: hidden;
 }
+/* 画布区(横向 main-area) + 底部元件面板(纵向) 的垂直容器 */
+.main-vertical {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
 
 /* ========== 左侧垂直工具栏 ========== */
 .left-toolbar-wrap {
@@ -1150,6 +1157,143 @@ html, body {
   border-radius: 3px;
   padding: 4px 6px;
   font-size: 12px;
+}
+
+/* ========== 底部元件信息面板 ========== */
+.bottom-panel {
+  flex-shrink: 0;
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  background: var(--layer-panel-bg);
+  border-top: 1px solid var(--border-color);
+}
+
+.bottom-panel.collapsed {
+  height: 0 !important;
+  border-top: none;
+  overflow: hidden;
+}
+
+.bottom-panel-resizer {
+  height: 4px;
+  flex-shrink: 0;
+  cursor: row-resize;
+  background: transparent;
+}
+
+.bottom-panel-resizer:hover {
+  background: var(--accent);
+}
+
+.bottom-panel-header {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.bottom-panel-tabs {
+  display: flex;
+}
+
+.bottom-tab {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.bottom-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.bottom-tab.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent);
+}
+
+.bottom-panel-export-btn {
+  margin-left: auto;
+  margin-right: 8px;
+  padding: 3px 12px;
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--accent);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.bottom-panel-export-btn:hover {
+  background: var(--accent-hover);
+}
+
+.bottom-tab-content {
+  flex: 1;
+  overflow: hidden;
+  display: none;
+}
+
+.bottom-tab-content.active {
+  display: block;
+}
+
+.comp-table-wrap {
+  height: 100%;
+  overflow: auto;
+}
+
+.comp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.comp-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-secondary);
+}
+
+.comp-table th {
+  padding: 5px 8px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.comp-table td {
+  padding: 3px 8px;
+  border-bottom: 1px solid rgba(70, 70, 71, 0.4);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.comp-table tbody tr:hover {
+  background: var(--bg-hover);
+}
+
+.comp-table tbody tr.selected {
+  background: rgba(0, 122, 204, 0.28) !important;
+}
+
+.comp-table tbody tr:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.comp-empty {
+  text-align: center;
+  color: var(--text-dim) !important;
+  padding: 24px !important;
+  font-style: italic;
 }
 
 

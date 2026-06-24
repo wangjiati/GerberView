@@ -3,7 +3,7 @@ import {
   ArcQuadrantMode, MAX_LAYERS, IU_PER_MM, IU_PER_INCH, LayerType,
   LAYER_TYPE_ORDER,
 } from './enums';
-import { GerberItem, Point, pt, createGerberItem } from './gerber-item';
+import { GerberItem, Point, pt, createGerberItem, ComponentInfo } from './gerber-item';
 import { transformPointWorld } from '../tools/transform';
 import { DCode, ApertureMacro } from '../parser/aperture';
 
@@ -64,10 +64,14 @@ export class GerberImage {
   fileFunction: string = '';
   filePart: string = '';
   filePolarity: string = '';
+  // 是否含 RS-274X 扩展命令(%...%)。false = RS-274D 老格式
+  hasRS274X: boolean = false;
   // 收集的网络名和元件名（用于高亮）
   netNames: Set<string> = new Set();
   componentRefs: Set<string> = new Set();
   aperFunctions: Set<string> = new Set();
+  // 元件级元数据聚合（按位号索引）— 由解析时逐项收集
+  components: Map<string, ComponentInfo> = new Map();
 
   // 图层颜色（前端用）
   color: string = '#FFFFFF';

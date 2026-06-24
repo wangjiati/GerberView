@@ -21,6 +21,7 @@ import { loadShareData, generateShareHTML, downloadShareHTML } from '../tools/sh
 import { showShareDialog } from './share-dialog';
 import { showExportPngDialog } from './export-png-dialog';
 import { exportLayersAsZip, downloadZip } from '../tools/export-png';
+import { exportPickPlaceCSV, exportBomCSV, downloadCSV, collectComponents, collectPads, naturalRefSort } from '../tools/exporter-csv';
 
 export type UnitMode = 'mm' | 'inch' | 'mil';
 
@@ -71,6 +72,7 @@ const ICONS = {
   highlightNet: svg('<path d="M4 10l4-6 4 4 4-4" fill="none" stroke-width="1.5"/><circle cx="4" cy="10" r="1" fill="currentColor" stroke="none"/>'),
   highlightComp: svg('<rect x="5" y="5" width="10" height="10" rx="2" fill="none" stroke-width="1.2"/><path d="M8 3v4M12 3v4" stroke-width="1"/>'),
   highlightAttr: svg('<path d="M4 4l6 12 6-12" fill="none" stroke-width="1.5"/>'),
+  compPanel: svg('<rect x="3" y="4" width="14" height="12" rx="1" fill="none" stroke-width="1.2"/><path d="M3 8h14M7 4v4M11 4v4" stroke-width="1"/><circle cx="7" cy="12" r="0.8" fill="currentColor" stroke="none"/><circle cx="11" cy="12" r="0.8" fill="currentColor" stroke="none"/><circle cx="14" cy="12" r="0.8" fill="currentColor" stroke="none"/>'),
 };
 
 export class App {
@@ -95,6 +97,18 @@ export class App {
   private _compSel!: HTMLSelectElement;
   private _attrSel!: HTMLSelectElement;
   private fileInfoEl!: HTMLElement;
+
+  // 底部元件信息面板状态
+  private bottomPanelEl!: HTMLElement;
+  private bottomPanelHeight: number = 220;
+  private bottomPanelVisible: boolean = false;
+  private compTabBtns: HTMLElement[] = [];
+  private compTabContents: HTMLElement[] = [];
+  private compTableBodyRef!: HTMLElement;
+  private compTableBodyBom!: HTMLElement;
+  private compTableBodyPads!: HTMLElement;
+  private selectedRef: string = '';        // 当前选中的位号(行高亮重绘用)
+  private selectedPad: string = '';        // 当前选中的焊盘 key "ref|padName"
 
   // 测量工具状态
   private measureActive: boolean = false;
@@ -144,6 +158,10 @@ export class App {
     container.className = 'gerberview-app';
     container.appendChild(this.createMenuBar());
     container.appendChild(this.createTopToolbar());
+    // 画布区 + 底部元件面板 共用一个垂直 flex 容器，
+    // 这样底部面板展开/收起时画布高度会自动收缩(resizeCanvas 读取父尺寸)
+    const mainVertical = document.createElement('div');
+    mainVertical.className = 'main-vertical';
     const mainArea = document.createElement('div');
     mainArea.className = 'main-area';
     mainArea.appendChild(this.createLeftToolbar());
@@ -159,7 +177,11 @@ export class App {
     this.layerPanelEl = this.createLayerPanel();
     mainArea.appendChild(this.layerPanelEl);
     this.initLayerPanelResize(resizer);
-    container.appendChild(mainArea);
+    mainVertical.appendChild(mainArea);
+    // 底部元件信息面板(默认收起)
+    this.bottomPanelEl = this.createBottomPanel();
+    mainVertical.appendChild(this.bottomPanelEl);
+    container.appendChild(mainVertical);
     this.statusBarEl = this.createStatusBar();
     container.appendChild(this.statusBarEl);
   }
@@ -182,6 +204,9 @@ export class App {
       { label: '导出为 PNG...', action: () => this.exportPNG() },
       { label: '导出为 SVG...', action: () => this.exportSVG() },
       { label: '导出为 DXF...', action: () => this.exportDXF() },
+      { type: 'separator' as const },
+      { label: '导出贴装坐标 (CSV)...', action: () => this.exportPickPlace() },
+      { label: '导出 BOM (CSV)...', action: () => this.exportBom() },
     );
     if (!this.shareMode) {
       fileItems.push(
@@ -366,6 +391,7 @@ export class App {
     tb.appendChild(this.ltBtn('contrast', ICONS.contrast, '高对比度模式\n增强图层颜色对比度便于区分', false));
     tb.appendChild(sep(true));
     tb.appendChild(this.ltBtn('layerMgr', ICONS.showLayers, '显示/隐藏图层面板\n快捷键: L', true));
+    tb.appendChild(this.ltBtn('compPanel', ICONS.compPanel, '元件信息面板\n显示位号/BOM 列表与导出\n快捷键: B', false));
     tb.appendChild(this.ltBtn('mirror', ICONS.mirror, '镜像视图\n水平翻转整个画布内容', false));
     tb.appendChild(sep(true));
     tb.appendChild(this.ltBtn('simulation', ICONS.contrast, '仿真视图\n近似真实 PCB 外观\n快捷键: Ctrl+Shift+S', false));
@@ -570,6 +596,7 @@ export class App {
       case 'contrast': this.displayOptions.highContrastMode = active; break;
       case 'diff': this.displayOptions.xorMode = active; break;
       case 'layerMgr': this.layerPanelVisible = active; this.layerPanelEl.classList.toggle('hidden', !active); break;
+      case 'compPanel': this.toggleBottomPanel(active); break;
       case 'mirror': this.displayOptions.mirror = active; break;
       case 'simulation': this.toggleSimulation(active); break;
       case 'simFlip': this.toggleSimFlip(); break;
@@ -588,6 +615,7 @@ export class App {
     set('contrast', this.displayOptions.highContrastMode);
     set('diff', this.displayOptions.xorMode);
     set('layerMgr', this.layerPanelVisible);
+    set('compPanel', this.bottomPanelVisible);
     set('mirror', this.displayOptions.mirror);
     set('simulation', this.simulationActive);
     set('simFlip', this.simulationFlip);
@@ -650,6 +678,299 @@ export class App {
   private switchTab(index: number) {
     this.layerTabBtns.forEach((b, i) => b.classList.toggle('active', i === index));
     this.layerTabContents.forEach((c, i) => c.classList.toggle('active', i === index));
+  }
+
+  // ========== 底部元件信息面板 ==========
+
+  private createBottomPanel(): HTMLElement {
+    const panel = document.createElement('div');
+    panel.className = 'bottom-panel collapsed';
+
+    // 上方拖动条(调整高度)
+    const resizer = document.createElement('div');
+    resizer.className = 'bottom-panel-resizer';
+    panel.appendChild(resizer);
+    this.initBottomPanelResize(resizer);
+
+    // Tab 栏 + 导出按钮
+    const header = document.createElement('div');
+    header.className = 'bottom-panel-header';
+    const tabsEl = document.createElement('div');
+    tabsEl.className = 'bottom-panel-tabs';
+    const refTab = document.createElement('div');
+    refTab.className = 'bottom-tab active'; refTab.textContent = '位号维度';
+    const bomTab = document.createElement('div');
+    bomTab.className = 'bottom-tab'; bomTab.textContent = 'BOM 维度';
+    const padsTab = document.createElement('div');
+    padsTab.className = 'bottom-tab'; padsTab.textContent = '焊盘维度';
+    tabsEl.appendChild(refTab); tabsEl.appendChild(bomTab); tabsEl.appendChild(padsTab);
+    this.compTabBtns = [refTab, bomTab, padsTab];
+
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'bottom-panel-export-btn';
+    exportBtn.textContent = '导出 CSV';
+    exportBtn.addEventListener('click', () => this.exportCurrentTabCSV());
+    header.appendChild(tabsEl);
+    header.appendChild(exportBtn);
+    panel.appendChild(header);
+
+    // Tab 内容区
+    const refContent = document.createElement('div');
+    refContent.className = 'bottom-tab-content active';
+    const bomContent = document.createElement('div');
+    bomContent.className = 'bottom-tab-content';
+    const padsContent = document.createElement('div');
+    padsContent.className = 'bottom-tab-content';
+    this.compTabContents = [refContent, bomContent, padsContent];
+    refTab.addEventListener('click', () => this.switchCompTab(0));
+    bomTab.addEventListener('click', () => this.switchCompTab(1));
+    padsTab.addEventListener('click', () => this.switchCompTab(2));
+
+    this.compTableBodyRef = this.buildCompTable(refContent, [
+      '位号', '值', '封装', '贴装', '旋转°', '面', '焊盘数', '中心X(mm)', '中心Y(mm)', '网络', '制造商', 'MPN'
+    ]);
+    this.compTableBodyBom = this.buildCompTable(bomContent, [
+      '注释', '位号', '封装', '值', '制造商', 'MPN', '数量'
+    ]);
+    this.compTableBodyPads = this.buildCompTable(padsContent, [
+      '位号', '焊盘号', '引脚功能', '网络', '面', '中心X(mm)', '中心Y(mm)', '类型', '尺寸X(mm)', '尺寸Y(mm)'
+    ]);
+
+    panel.appendChild(refContent);
+    panel.appendChild(bomContent);
+    panel.appendChild(padsContent);
+    return panel;
+  }
+
+  /** 构建带表头的滚动表格，返回 tbody 元素供后续填充 */
+  private buildCompTable(container: HTMLElement, headers: string[]): HTMLElement {
+    const wrap = document.createElement('div');
+    wrap.className = 'comp-table-wrap';
+    const table = document.createElement('table');
+    table.className = 'comp-table';
+    const thead = document.createElement('thead');
+    const tr = document.createElement('tr');
+    for (const h of headers) {
+      const th = document.createElement('th'); th.textContent = h; tr.appendChild(th);
+    }
+    thead.appendChild(tr); table.appendChild(thead);
+    const tbody = document.createElement('tbody');
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    container.appendChild(wrap);
+    return tbody;
+  }
+
+  private switchCompTab(index: number) {
+    this.compTabBtns.forEach((b, i) => b.classList.toggle('active', i === index));
+    this.compTabContents.forEach((c, i) => c.classList.toggle('active', i === index));
+  }
+
+  /** 显示/隐藏底部面板 */
+  toggleBottomPanel(show: boolean) {
+    this.bottomPanelVisible = show;
+    this.bottomPanelEl.classList.toggle('collapsed', !show);
+    // 画布尺寸变化需重算
+    requestAnimationFrame(() => { this.resizeCanvas(); this.requestRender(); });
+  }
+
+  /** 根据已加载图层判断格式，给出元件面板的空提示文案 */
+  private getNoDataHint(): string {
+    let anyLayer = false, anyRS274X = false, hasLoaded = false;
+    for (let i = 0; i < 32; i++) {
+      const l = this.layerManager.getLayer(i);
+      if (!l) continue;
+      anyLayer = true;
+      if (l.hasRS274X) anyRS274X = true;
+    }
+    if (!anyLayer) return '请先加载 Gerber 文件';
+    // RS-274X 扩展存在但无 X2 元件属性(.C/.P) → 标准 RS-274X
+    // 无任何 RS-274X 扩展 → RS-274D 老格式
+    if (anyRS274X) {
+      return '当前文件为 RS-274X 标准格式，缺少 X2/X3 元件属性 (.C/.P/.CVal/.CRot 等)，无法提取元件/焊盘/BOM 信息';
+    }
+    return '当前文件为 RS-274D 老格式，无 RS-274X 扩展信息（无坐标格式/单位/光圈定义），元件信息无法提取';
+  }
+
+  /** 刷新底部面板三个表格的数据(在文件加载后或选中态变化时调用) */
+  private updateBottomPanel() {
+    if (!this.bottomPanelEl) return;
+    const comps = collectComponents(this.layerManager);
+    const refList = Array.from(comps.values()).sort((a, b) => naturalRefSort(a.ref, b.ref));
+
+    // 位号维度表格
+    this.compTableBodyRef.innerHTML = '';
+    if (refList.length === 0) {
+      this.compTableBodyRef.innerHTML = `<tr><td colspan="12" class="comp-empty">${this.getNoDataHint()}</td></tr>`;
+    } else {
+      for (const c of refList) {
+        const tr = document.createElement('tr');
+        if (this.selectedRef === c.ref) tr.classList.add('selected');
+        const side = c.layerSide === 'top' ? '顶' : c.layerSide === 'bottom' ? '底' : '-';
+        const cells = [
+          c.ref, c.value, c.footprint, c.mountType, c.rotation,
+          side, c.padCount, c.centerX, c.centerY,
+          c.nets.join(', '), c.manufacturer, c.mpn,
+        ];
+        for (const cell of cells) {
+          const td = document.createElement('td'); td.textContent = String(cell); tr.appendChild(td);
+        }
+        tr.addEventListener('click', () => this.selectComponent(c.ref));
+        this.compTableBodyRef.appendChild(tr);
+      }
+    }
+
+    // BOM 维度表格(按 footprint+value+manufacturer+mpn 聚合)
+    this.compTableBodyBom.innerHTML = '';
+    interface BomAgg { designators: string[]; footprint: string; value: string; manufacturer: string; mpn: string; }
+    const groups = new Map<string, BomAgg>();
+    for (const c of refList) {
+      const key = `${c.footprint}|${c.value}|${c.manufacturer}|${c.mpn}`;
+      let g = groups.get(key);
+      if (!g) {
+        g = { designators: [], footprint: c.footprint, value: c.value, manufacturer: c.manufacturer, mpn: c.mpn };
+        groups.set(key, g);
+      }
+      g.designators.push(c.ref);
+    }
+    const bomRows = Array.from(groups.values())
+      .map(g => ({ ...g, designators: g.designators.sort(naturalRefSort) }))
+      .sort((a, b) => a.footprint.localeCompare(b.footprint) || a.value.localeCompare(b.value));
+    if (bomRows.length === 0) {
+      this.compTableBodyBom.innerHTML = `<tr><td colspan="7" class="comp-empty">${this.getNoDataHint()}</td></tr>`;
+    } else {
+      for (const r of bomRows) {
+        const tr = document.createElement('tr');
+        const comment = r.value || r.mpn || '';
+        const cells = [comment, r.designators.join(', '), r.footprint, r.value, r.manufacturer, r.mpn, r.designators.length];
+        for (const cell of cells) {
+          const td = document.createElement('td'); td.textContent = String(cell); tr.appendChild(td);
+        }
+        this.compTableBodyBom.appendChild(tr);
+      }
+    }
+
+    // 焊盘维度表格
+    this.compTableBodyPads.innerHTML = '';
+    const padList = collectPads(this.layerManager)
+      .sort((a, b) => naturalRefSort(a.ref, b.ref) || (parseInt(a.padName) - parseInt(b.padName)) || a.padName.localeCompare(b.padName));
+    if (padList.length === 0) {
+      this.compTableBodyPads.innerHTML = `<tr><td colspan="10" class="comp-empty">${this.getNoDataHint()}</td></tr>`;
+    } else {
+      const padTypeNames: Record<string, string> = { C: '圆形', R: '矩形', O: '椭圆', P: '多边形', M: '宏' };
+      for (const p of padList) {
+        const tr = document.createElement('tr');
+        if (this.selectedPad === `${p.ref}|${p.padName}`) tr.classList.add('selected');
+        const side = p.layerSide === 'top' ? '顶' : p.layerSide === 'bottom' ? '底' : '-';
+        const cells = [
+          p.ref, p.padName, p.pinFunction, p.netName, side,
+          p.centerX, p.centerY, padTypeNames[p.padType] || p.padType || '-',
+          p.sizeX, p.sizeY,
+        ];
+        for (const cell of cells) {
+          const td = document.createElement('td'); td.textContent = String(cell); tr.appendChild(td);
+        }
+        tr.addEventListener('click', () => this.selectPad(p.ref, p.padName));
+        this.compTableBodyPads.appendChild(tr);
+      }
+    }
+  }
+
+  /** 选中一位号：高亮整个元件(与焊盘高亮互斥) */
+  private selectComponent(ref: string) {
+    // 再次点击同一行则取消
+    if (this.selectedRef === ref) {
+      this.selectedRef = '';
+      this.displayOptions.highlightComp = '';
+    } else {
+      this.selectedRef = ref;
+      this.displayOptions.highlightComp = ref;
+    }
+    // 互斥：清除焊盘高亮
+    this.selectedPad = '';
+    this.displayOptions.highlightPadComp = '';
+    this.displayOptions.highlightPadName = '';
+    // 同步元件下拉
+    if (this._compSel) this._compSel.value = this.displayOptions.highlightComp;
+    this.updateBottomPanel();
+    this.requestRender();
+  }
+
+  /** 选中一焊盘：高亮单个焊盘(与位号高亮互斥) */
+  private selectPad(ref: string, padName: string) {
+    const key = `${ref}|${padName}`;
+    if (this.selectedPad === key) {
+      this.selectedPad = '';
+      this.displayOptions.highlightPadComp = '';
+      this.displayOptions.highlightPadName = '';
+    } else {
+      this.selectedPad = key;
+      this.displayOptions.highlightPadComp = ref;
+      this.displayOptions.highlightPadName = padName;
+    }
+    // 互斥：清除位号高亮
+    this.selectedRef = '';
+    this.displayOptions.highlightComp = '';
+    if (this._compSel) this._compSel.value = '';
+    this.updateBottomPanel();
+    this.requestRender();
+  }
+
+  /** 根据当前激活的 Tab 导出对应 CSV */
+  private exportCurrentTabCSV() {
+    const activeIndex = this.compTabBtns.findIndex(b => b.classList.contains('active'));
+    if (activeIndex === 0) {
+      const csv = exportPickPlaceCSV(this.layerManager);
+      downloadCSV(csv, 'pick-place.csv');
+    } else if (activeIndex === 1) {
+      const csv = exportBomCSV(this.layerManager);
+      downloadCSV(csv, 'bom.csv');
+    } else {
+      // 焊盘维度：导出贴装坐标(每焊盘一行)
+      const csv = exportPickPlaceCSV(this.layerManager);
+      downloadCSV(csv, 'pick-place.csv');
+    }
+  }
+
+  /** 贴装坐标 CSV 导出(菜单/右键调用) */
+  private exportPickPlace() {
+    const csv = exportPickPlaceCSV(this.layerManager);
+    downloadCSV(csv, 'pick-place.csv');
+  }
+
+  /** BOM CSV 导出(菜单/右键调用) */
+  private exportBom() {
+    const csv = exportBomCSV(this.layerManager);
+    downloadCSV(csv, 'bom.csv');
+  }
+
+  private initBottomPanelResize(resizer: HTMLElement) {
+    let dragging = false;
+    let startY = 0;
+    let startH = 0;
+    resizer.addEventListener('mousedown', (e) => {
+      dragging = true;
+      startY = e.clientY;
+      startH = this.bottomPanelEl.getBoundingClientRect().height;
+      document.body.style.cursor = 'row-resize';
+      document.body.style.userSelect = 'none';
+      e.preventDefault();
+    });
+    const onMove = (e: MouseEvent) => {
+      if (!dragging) return;
+      // 向上拖增大高度
+      let h = startH + (startY - e.clientY);
+      const maxH = window.innerHeight * 0.6;
+      h = Math.max(100, Math.min(maxH, h));
+      this.bottomPanelHeight = h;
+      this.bottomPanelEl.style.height = h + 'px';
+      this.resizeCanvas();
+    };
+    const onUp = () => {
+      if (dragging) { dragging = false; document.body.style.cursor = ''; document.body.style.userSelect = ''; this.requestRender(); }
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
   }
 
   private createStatusBar(): HTMLElement {
@@ -933,6 +1254,12 @@ export class App {
       else if (key === 'l') { this.displayOptions.linesFill = !this.displayOptions.linesFill; this.syncLeftToolbar(); this.requestRender(); }
       else if (key === 'p') { this.displayOptions.polygonsFill = !this.displayOptions.polygonsFill; this.syncLeftToolbar(); this.requestRender(); }
       else if (key === 'd') { this.displayOptions.showDcodes = !this.displayOptions.showDcodes; this.syncLeftToolbar(); this.requestRender(); }
+      else if (key === 'b') {
+        const next = !this.bottomPanelVisible;
+        const btn = this.leftToolbarBtns.get('compPanel');
+        if (btn) btn.classList.toggle('active', next);
+        this.toggleBottomPanel(next);
+      }
       else if (key === 'S' && e.ctrlKey && e.shiftKey) { e.preventDefault(); this.toggleSimulation(!this.simulationActive); }
       else if (key === 'PageDown') { this.switchActiveLayer(1); }
       else if (key === 'PageUp') { this.switchActiveLayer(-1); }
@@ -1333,7 +1660,7 @@ export class App {
     this.updateLayerPanel(); this.updateActiveLayerSelect(); this.populateX2Selectors(); this.updateFileInfo(); this.zoomFit();
     // 加载后按板结构自动排序
     this.layerManager.sortByBoardStructure();
-    this.updateLayerPanel(); this.updateActiveLayerSelect(); this.requestRender();
+    this.updateLayerPanel(); this.updateActiveLayerSelect(); this.updateBottomPanel(); this.requestRender();
   }
 
   private async loadZipFile(file: File) {
@@ -1851,7 +2178,13 @@ export class App {
 
   private clearAll() {
     this.layerManager.clearAll();
-    this.updateLayerPanel(); this.updateActiveLayerSelect(); this.requestRender();
+    // 清除选中态与高亮(避免面板残留旧数据 / 画布残留高亮)
+    this.selectedRef = '';
+    this.selectedPad = '';
+    this.displayOptions.highlightComp = '';
+    this.displayOptions.highlightPadComp = '';
+    this.displayOptions.highlightPadName = '';
+    this.updateLayerPanel(); this.updateActiveLayerSelect(); this.updateBottomPanel(); this.requestRender();
   }
 
   private setAllLayersVisible(v: boolean) {
@@ -1908,6 +2241,9 @@ export class App {
       { label: '导出 PNG...', action: () => this.exportPNG() },
       { label: '导出 SVG...', action: () => this.exportSVG() },
       { label: '导出 DXF...', action: () => this.exportDXF() },
+      { separator: true, label: '' },
+      { label: '导出贴装坐标 (CSV)...', action: () => this.exportPickPlace() },
+      { label: '导出 BOM (CSV)...', action: () => this.exportBom() },
     ];
 
     for (const item of items) {
